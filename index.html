@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ключи (радикалы) — тренажёр</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#1a1e26; --card2:#232936; --line:#2c3442;
+    --ink:#e8ecf2; --dim:#8b95a7; --accent:#e0533d; --ok:#3ecf8e; --no:#e0a23d; --new:#5b8def;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg);color:var(--ink);min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;padding:16px 14px 40px}
+  h1{font-size:18px;font-weight:600;margin:4px 0 2px;letter-spacing:.2px}
+  .sub{color:var(--dim);font-size:13px;margin-bottom:14px;text-align:center}
+  .tabs{display:flex;gap:8px;margin-bottom:14px}
+  .tab{padding:8px 16px;border-radius:10px;border:1px solid var(--line);background:none;
+    color:var(--dim);font-size:14px;font-weight:600;cursor:pointer}
+  .tab.on{background:var(--card2);color:var(--ink)}
+  .bar{display:flex;gap:14px;font-size:13px;color:var(--dim);margin-bottom:10px;flex-wrap:wrap;justify-content:center}
+  .bar b{color:var(--ink)}
+  .setting{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim);margin-bottom:14px}
+  .setting input{width:60px;background:var(--card2);color:var(--ink);border:1px solid var(--line);
+    border-radius:8px;padding:5px 8px;font-size:14px;text-align:center}
+  /* --- Тренировка --- */
+  .card{width:100%;max-width:360px;aspect-ratio:3/4;background:var(--card);
+    border:1px solid var(--line);border-radius:20px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:22px;text-align:center;user-select:none;transition:background .15s}
+  .card:active{background:var(--card2)}
+  .glyph{font-size:104px;line-height:1;margin:2px 0 10px}
+  .hint{color:var(--dim);font-size:13px}
+  .back{display:none}
+  .card.flip .front{display:none}
+  .card.flip .back{display:block}
+  .py{font-size:26px;color:var(--accent);margin-bottom:4px}
+  .mean{font-size:21px;margin-bottom:10px}
+  .mn{font-size:14px;color:var(--dim);line-height:1.4;margin-bottom:12px;max-width:300px}
+  .ex{font-size:15px;color:var(--dim)}
+  .ex b{color:var(--ink);font-size:30px;vertical-align:middle;margin-right:6px}
+  .speak{margin-top:14px;background:var(--card2);color:var(--ink);border:1px solid var(--line);
+    border-radius:12px;padding:9px 18px;font-size:15px;font-weight:600;cursor:pointer}
+  .speak:active{background:var(--line)}
+  .btns{display:flex;gap:12px;width:100%;max-width:360px;margin-top:16px}
+  .btns button{flex:1;padding:15px 0;border:none;border-radius:14px;font-size:15px;
+    font-weight:600;color:#0f1115;cursor:pointer}
+  .no{background:var(--no)} .ok{background:var(--ok)}
+  .btns.hidden{visibility:hidden}
+  .done{text-align:center;margin-top:40px;color:var(--dim);max-width:340px}
+  .done b{color:var(--ink)}
+  .reset{margin-top:24px;background:none;color:var(--dim);border:1px solid var(--line);
+    border-radius:10px;padding:8px 14px;font-size:12px;font-weight:500;cursor:pointer}
+  /* --- Список --- */
+  #listScreen{width:100%;max-width:440px;display:none}
+  .row{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line)}
+  .rg{font-size:28px;width:54px;text-align:center;flex:none}
+  .rinfo{flex:1;min-width:0}
+  .rtop{font-size:15px}
+  .rtop .rpy{color:var(--accent);margin-right:6px}
+  .rbot{font-size:12px;color:var(--dim);margin-top:2px}
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;color:#0f1115}
+  .b-new{background:var(--new)} .b-learn{background:var(--no)} .b-done{background:var(--ok)}
+  .ract{display:flex;flex-direction:column;gap:5px;flex:none}
+  .ract button{border:1px solid var(--line);background:var(--card2);color:var(--ink);
+    border-radius:8px;padding:6px 9px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .ract .learn{border-color:var(--ok);color:var(--ok)}
+  .ract .delay{border-color:var(--dim)}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<h1>Ключи китайских иероглифов</h1>
+<div class="sub">современный набор · мнемоники · озвучка · интервальное повторение</div>
+
+<div class="tabs">
+  <button class="tab on" id="tabTrain">Тренировка</button>
+  <button class="tab" id="tabList">Все ключи</button>
+</div>
+
+<!-- ЭКРАН ТРЕНИРОВКИ -->
+<div id="trainScreen">
+  <div class="bar">
+    <span>На сегодня: <b id="due">0</b></span>
+    <span>Новых сегодня: <b id="newToday">0</b></span>
+    <span>Выучено: <b id="learned">0</b> / <b id="total">0</b></span>
+  </div>
+  <div class="setting">
+    Новых ключей в день:
+    <input type="number" id="perday" min="1" max="100" step="1">
+  </div>
+
+  <div id="card" class="card">
+    <div class="front">
+      <div class="glyph" id="glyph">人</div>
+      <div class="hint">нажми, чтобы проверить</div>
+    </div>
+    <div class="back">
+      <div class="glyph" id="bglyph">人</div>
+      <div class="py" id="py">rén</div>
+      <div class="mean" id="mean">человек</div>
+      <div class="mn" id="mn"></div>
+      <div class="ex" id="ex"></div>
+      <button class="speak" id="speak" title="Послушать">🔊 Послушать</button>
+    </div>
+  </div>
+
+  <div class="btns hidden" id="btns">
+    <button class="no" id="bno">Не знаю</button>
+    <button class="ok" id="bok">Знаю</button>
+  </div>
+
+  <div id="done" class="done hidden">
+    <p><b>На сегодня всё.</b><br>Лимит новых на день исчерпан или повторов пока нет. Можно поднять лимит выше или добавить ключи вручную во вкладке «Все ключи».</p>
+  </div>
+
+  <button class="reset" id="reset">Сбросить весь прогресс</button>
+</div>
+
+<!-- ЭКРАН СПИСКА -->
+<div id="listScreen"></div>
+
+<script>
+const DATA = [
+  {"r": "人", "py": "rén", "mean": "человек", "ex": "你", "exmean": "ты", "mn": "Две ноги шагающего человека.", "expy": "nǐ"},
+  {"r": "亻(人)", "py": "rén", "mean": "человек (боковой)", "ex": "他", "exmean": "он", "mn": "Человек, прислонившийся слева.", "expy": "tā"},
+  {"r": "口", "py": "kǒu", "mean": "рот", "ex": "吃", "exmean": "есть", "mn": "Квадрат — открытый рот.", "expy": "chī"},
+  {"r": "日", "py": "rì", "mean": "солнце / день", "ex": "明", "exmean": "светлый", "mn": "Солнце с лучом-чёрточкой внутри.", "expy": "míng"},
+  {"r": "月", "py": "yuè", "mean": "луна / месяц (и плоть)", "ex": "朋", "exmean": "друг", "mn": "Месяц с двумя облачками; в теле — кусок мяса.", "expy": "péng"},
+  {"r": "木", "py": "mù", "mean": "дерево", "ex": "林", "exmean": "лес", "mn": "Ствол с ветками и корнями.", "expy": "lín"},
+  {"r": "氵(水)", "py": "shuǐ", "mean": "вода", "ex": "河", "exmean": "река", "mn": "Три капли, стекающие слева.", "expy": "hé"},
+  {"r": "火", "py": "huǒ", "mean": "огонь", "ex": "灯", "exmean": "лампа", "mn": "Человечек с искрами по бокам — костёр.", "expy": "dēng"},
+  {"r": "土", "py": "tǔ", "mean": "земля / почва", "ex": "地", "exmean": "земля", "mn": "Росток торчит из двух слоёв земли.", "expy": "dì"},
+  {"r": "钅(金)", "py": "jīn", "mean": "металл / золото", "ex": "钱", "exmean": "деньги", "mn": "Слиток под крышей, две крупинки золота.", "expy": "qián"},
+  {"r": "山", "py": "shān", "mean": "гора", "ex": "岛", "exmean": "остров", "mn": "Три горных пика.", "expy": "dǎo"},
+  {"r": "忄(心)", "py": "xīn", "mean": "сердце (боковое)", "ex": "情", "exmean": "чувство", "mn": "Сердце сбоку: две точки-удара у вертикали.", "expy": "qíng"},
+  {"r": "心", "py": "xīn", "mean": "сердце", "ex": "想", "exmean": "думать", "mn": "Сердце с тремя каплями-камерами.", "expy": "xiǎng"},
+  {"r": "扌(手)", "py": "shǒu", "mean": "рука", "ex": "打", "exmean": "бить", "mn": "Ладонь-крючок с пальцами.", "expy": "dǎ"},
+  {"r": "目", "py": "mù", "mean": "глаз", "ex": "看", "exmean": "смотреть", "mn": "Глаз поставили вертикально, зрачки внутри.", "expy": "kàn"},
+  {"r": "田", "py": "tián", "mean": "поле", "ex": "男", "exmean": "мужчина", "mn": "Поле, расчерченное на четыре грядки.", "expy": "nán"},
+  {"r": "女", "py": "nǚ", "mean": "женщина", "ex": "好", "exmean": "хороший", "mn": "Фигура в реверансе, скрещённые ноги.", "expy": "hǎo"},
+  {"r": "子", "py": "zǐ", "mean": "ребёнок", "ex": "字", "exmean": "иероглиф", "mn": "Младенец с большой головой, ручки в пелёнке.", "expy": "zì"},
+  {"r": "大", "py": "dà", "mean": "большой", "ex": "天", "exmean": "небо", "mn": "Человек развёл руки: «вот такой большой».", "expy": "tiān"},
+  {"r": "小", "py": "xiǎo", "mean": "маленький", "ex": "少", "exmean": "мало", "mn": "Крошечная точка с двумя искорками.", "expy": "shǎo"},
+  {"r": "力", "py": "lì", "mean": "сила", "ex": "加", "exmean": "прибавлять", "mn": "Согнутая напряжённая мышца-рука.", "expy": "jiā"},
+  {"r": "刂(刀)", "py": "dāo", "mean": "нож (боковой)", "ex": "切", "exmean": "резать", "mn": "Лезвие, стоящее справа.", "expy": "qiē"},
+  {"r": "讠(言)", "py": "yán", "mean": "речь / слово", "ex": "说", "exmean": "говорить", "mn": "Рот, из которого выходит линия речи.", "expy": "shuō"},
+  {"r": "饣(食)", "py": "shí", "mean": "еда", "ex": "饭", "exmean": "еда / рис", "mn": "Крышка над миской с едой.", "expy": "fàn"},
+  {"r": "走", "py": "zǒu", "mean": "идти пешком", "ex": "起", "exmean": "вставать", "mn": "Человек делает шаг вперёд, нога в движении.", "expy": "qǐ"},
+  {"r": "足", "py": "zú", "mean": "нога / стопа", "ex": "跑", "exmean": "бежать", "mn": "Колено сверху и ступня снизу.", "expy": "pǎo"},
+  {"r": "雨", "py": "yǔ", "mean": "дождь", "ex": "雪", "exmean": "снег", "mn": "Тучка, из неё падают четыре капли.", "expy": "xuě"},
+  {"r": "石", "py": "shí", "mean": "камень", "ex": "码", "exmean": "код / номер", "mn": "Обрыв (厂), под ним валун (口).", "expy": "mǎ"},
+  {"r": "王", "py": "wáng", "mean": "царь / нефрит", "ex": "玩", "exmean": "играть", "mn": "Три уровня (небо-человек-земля) на вертикали власти.", "expy": "wán"},
+  {"r": "米", "py": "mǐ", "mean": "рис", "ex": "粉", "exmean": "порошок", "mn": "Рисинки разлетаются от центра в стороны.", "expy": "fěn"},
+  {"r": "纟(糸)", "py": "mì", "mean": "шёлк / нить", "ex": "红", "exmean": "красный", "mn": "Скрученный моток нитей с узелком внизу.", "expy": "hóng"},
+  {"r": "艹", "py": "cǎo", "mean": "трава", "ex": "花", "exmean": "цветок", "mn": "Две травинки торчат из земли.", "expy": "huā"},
+  {"r": "竹", "py": "zhú", "mean": "бамбук", "ex": "笑", "exmean": "смеяться", "mn": "Два свисающих листа бамбука.", "expy": "xiào"},
+  {"r": "虫", "py": "chóng", "mean": "насекомое", "ex": "蚊", "exmean": "комар", "mn": "Червячок с тельцем и хвостиком.", "expy": "wén"},
+  {"r": "鸟", "py": "niǎo", "mean": "птица", "ex": "鸡", "exmean": "курица", "mn": "Птица: глаз, хвост и лапка.", "expy": "jī"},
+  {"r": "马", "py": "mǎ", "mean": "лошадь", "ex": "妈", "exmean": "мама", "mn": "Конь с гривой и взмахом хвоста.", "expy": "mā"},
+  {"r": "鱼", "py": "yú", "mean": "рыба", "ex": "鲜", "exmean": "свежий", "mn": "Голова, тело-сетка и хвост рыбы.", "expy": "xiān"},
+  {"r": "门", "py": "mén", "mean": "дверь / ворота", "ex": "问", "exmean": "спрашивать", "mn": "Две створки ворот.", "expy": "wèn"},
+  {"r": "车", "py": "chē", "mean": "повозка / машина", "ex": "轮", "exmean": "колесо", "mn": "Повозка сверху: ось и колесо.", "expy": "lún"},
+  {"r": "衤(衣)", "py": "yī", "mean": "одежда", "ex": "衫", "exmean": "рубашка", "mn": "Рубашка с воротником и полами.", "expy": "shān"},
+  {"r": "贝", "py": "bèi", "mean": "раковина / деньги", "ex": "贵", "exmean": "дорогой", "mn": "Ракушка-каури — древние деньги.", "expy": "guì"},
+  {"r": "又", "py": "yòu", "mean": "снова / правая рука", "ex": "友", "exmean": "друг", "mn": "Рука с двумя пальцами, снова хватает.", "expy": "yǒu"},
+  {"r": "宀", "py": "mián", "mean": "крыша / дом", "ex": "家", "exmean": "дом", "mn": "Крыша с трубой над домом.", "expy": "jiā"},
+  {"r": "广", "py": "guǎng", "mean": "навес", "ex": "店", "exmean": "магазин", "mn": "Навес, пристроенный к стене.", "expy": "diàn"},
+  {"r": "厂", "py": "chǎng", "mean": "обрыв / навес", "ex": "厅", "exmean": "зал", "mn": "Скала с козырьком.", "expy": "tīng"},
+  {"r": "疒", "py": "nì", "mean": "болезнь", "ex": "病", "exmean": "болезнь", "mn": "Человек в кровати под навесом — болеет.", "expy": "bìng"},
+  {"r": "辶", "py": "chuò", "mean": "движение / дорога", "ex": "这", "exmean": "это", "mn": "Шаг с дорожкой-волной снизу.", "expy": "zhè"},
+  {"r": "冫", "py": "bīng", "mean": "лёд", "ex": "冷", "exmean": "холодно", "mn": "Две льдинки.", "expy": "lěng"},
+  {"r": "彳", "py": "chì", "mean": "шаг", "ex": "很", "exmean": "очень", "mn": "Двойной шаг — перекрёсток дорог.", "expy": "hěn"},
+  {"r": "阝(左)", "py": "fù", "mean": "холм (слева)", "ex": "院", "exmean": "двор", "mn": "Ступени холма слева.", "expy": "yuàn"},
+  {"r": "阝(右)", "py": "yì", "mean": "город (справа)", "ex": "都", "exmean": "столица", "mn": "Поселение-город справа.", "expy": "dōu"},
+  {"r": "寸", "py": "cùn", "mean": "мера / дюйм", "ex": "对", "exmean": "верно", "mn": "Рука с меткой пульса — мера длины.", "expy": "duì"},
+  {"r": "尸", "py": "shī", "mean": "тело / труп", "ex": "屋", "exmean": "комната", "mn": "Согнутая лежащая фигура.", "expy": "wū"},
+  {"r": "巾", "py": "jīn", "mean": "ткань / платок", "ex": "帽", "exmean": "шапка", "mn": "Полотенце на крючке.", "expy": "mào"},
+  {"r": "弓", "py": "gōng", "mean": "лук (оружие)", "ex": "张", "exmean": "натягивать", "mn": "Изогнутый лук.", "expy": "zhāng"},
+  {"r": "戈", "py": "gē", "mean": "копьё / алебарда", "ex": "我", "exmean": "я", "mn": "Древко с лезвием-крюком.", "expy": "wǒ"},
+  {"r": "户", "py": "hù", "mean": "дверь / двор", "ex": "房", "exmean": "комната", "mn": "Одностворчатая дверь.", "expy": "fáng"},
+  {"r": "攵(攴)", "py": "pū", "mean": "бить / действие", "ex": "教", "exmean": "учить", "mn": "Рука с палкой — постукивает.", "expy": "jiāo"},
+  {"r": "斤", "py": "jīn", "mean": "топор / цзинь", "ex": "新", "exmean": "новый", "mn": "Лезвие топора с топорищем.", "expy": "xīn"},
+  {"r": "方", "py": "fāng", "mean": "сторона / квадрат", "ex": "放", "exmean": "класть", "mn": "Флаг на шесте — направление.", "expy": "fàng"},
+  {"r": "欠", "py": "qiàn", "mean": "зевать / нехватка", "ex": "歌", "exmean": "песня", "mn": "Человек открыл рот в зевке.", "expy": "gē"},
+  {"r": "止", "py": "zhǐ", "mean": "стоп / ступня", "ex": "步", "exmean": "шаг", "mn": "Отпечаток остановившейся ноги.", "expy": "bù"},
+  {"r": "歹", "py": "dǎi", "mean": "смерть / кости", "ex": "死", "exmean": "умирать", "mn": "Обломок кости.", "expy": "sǐ"},
+  {"r": "毛", "py": "máo", "mean": "шерсть / волос", "ex": "尾", "exmean": "хвост", "mn": "Пучок шерсти с завитком.", "expy": "wěi"},
+  {"r": "气", "py": "qì", "mean": "воздух / пар", "ex": "汽", "exmean": "пар", "mn": "Струйки пара поднимаются, изгибаясь.", "expy": "qì"},
+  {"r": "父", "py": "fù", "mean": "отец", "ex": "爸", "exmean": "папа", "mn": "Рука с розгой — отец.", "expy": "bà"},
+  {"r": "牛", "py": "niú", "mean": "бык / корова", "ex": "物", "exmean": "вещь", "mn": "Голова быка с рогом.", "expy": "wù"},
+  {"r": "犭(犬)", "py": "quǎn", "mean": "собака (боковая)", "ex": "猫", "exmean": "кошка", "mn": "Пёс, присевший слева.", "expy": "māo"},
+  {"r": "瓜", "py": "guā", "mean": "тыква / дыня", "ex": "孤", "exmean": "одинокий", "mn": "Плеть с висящей тыквой.", "expy": "gū"},
+  {"r": "瓦", "py": "wǎ", "mean": "черепица", "ex": "瓶", "exmean": "бутылка", "mn": "Изогнутый кусок черепицы.", "expy": "píng"},
+  {"r": "甘", "py": "gān", "mean": "сладкий", "ex": "甜", "exmean": "сладкий", "mn": "Рот с чем-то сладким внутри.", "expy": "tián"},
+  {"r": "皮", "py": "pí", "mean": "кожа / шкура", "ex": "被", "exmean": "одеяло", "mn": "Рука сдирает шкуру.", "expy": "bèi"},
+  {"r": "皿", "py": "mǐn", "mean": "посуда / блюдо", "ex": "盘", "exmean": "тарелка", "mn": "Чаша на ножке.", "expy": "pán"},
+  {"r": "矢", "py": "shǐ", "mean": "стрела", "ex": "知", "exmean": "знать", "mn": "Стрела с оперением.", "expy": "zhī"},
+  {"r": "禾", "py": "hé", "mean": "злак / колос", "ex": "秋", "exmean": "осень", "mn": "Колос, склонившийся под зерном.", "expy": "qiū"},
+  {"r": "穴", "py": "xué", "mean": "пещера / нора", "ex": "空", "exmean": "пустой", "mn": "Вход в пещеру под навесом.", "expy": "kōng"},
+  {"r": "立", "py": "lì", "mean": "стоять", "ex": "站", "exmean": "стоять", "mn": "Человек стоит на земле, руки в стороны.", "expy": "zhàn"},
+  {"r": "罒(网)", "py": "wǎng", "mean": "сеть", "ex": "罚", "exmean": "штраф", "mn": "Сеть с ячейками.", "expy": "fá"},
+  {"r": "老(耂)", "py": "lǎo", "mean": "старый", "ex": "考", "exmean": "проверять", "mn": "Старик с палкой, согнутая спина.", "expy": "kǎo"},
+  {"r": "耳", "py": "ěr", "mean": "ухо", "ex": "取", "exmean": "брать", "mn": "Ушная раковина с мочкой.", "expy": "qǔ"},
+  {"r": "至", "py": "zhì", "mean": "достигать", "ex": "到", "exmean": "прибывать", "mn": "Стрела достигла земли.", "expy": "dào"},
+  {"r": "舌", "py": "shé", "mean": "язык", "ex": "话", "exmean": "речь", "mn": "Язык, высунутый изо рта.", "expy": "huà"},
+  {"r": "舟", "py": "zhōu", "mean": "лодка", "ex": "船", "exmean": "корабль", "mn": "Лодка с бортами и веслом.", "expy": "chuán"},
+  {"r": "虍", "py": "hǔ", "mean": "тигр", "ex": "虎", "exmean": "тигр", "mn": "Полосатая голова тигра сверху.", "expy": "hǔ"},
+  {"r": "行", "py": "xíng", "mean": "идти / ряд", "ex": "街", "exmean": "улица", "mn": "Перекрёсток дорог.", "expy": "jiē"},
+  {"r": "见", "py": "jiàn", "mean": "видеть", "ex": "观", "exmean": "наблюдать", "mn": "Глаз на ножках — смотрит.", "expy": "guān"},
+  {"r": "角", "py": "jiǎo", "mean": "рог / угол", "ex": "解", "exmean": "развязывать", "mn": "Изогнутый рог животного.", "expy": "jiě"},
+  {"r": "豆", "py": "dòu", "mean": "боб / сосуд", "ex": "登", "exmean": "подниматься", "mn": "Сосуд на ножке (древний бобовый горшок).", "expy": "dēng"},
+  {"r": "身", "py": "shēn", "mean": "тело", "ex": "躺", "exmean": "лежать", "mn": "Профиль тела сбоку.", "expy": "tǎng"},
+  {"r": "辛", "py": "xīn", "mean": "горький / тяжкий", "ex": "辣", "exmean": "острый", "mn": "Клеймо-игла — горькая участь.", "expy": "là"},
+  {"r": "酉", "py": "yǒu", "mean": "сосуд для вина", "ex": "酒", "exmean": "вино", "mn": "Кувшин с вином.", "expy": "jiǔ"},
+  {"r": "里", "py": "lǐ", "mean": "ли / село", "ex": "野", "exmean": "дикий", "mn": "Поле над землёй — деревня.", "expy": "yě"},
+  {"r": "隹", "py": "zhuī", "mean": "птица (короткохвостая)", "ex": "难", "exmean": "трудный", "mn": "Птичка с коротким хвостом.", "expy": "nán"},
+  {"r": "青", "py": "qīng", "mean": "сине-зелёный", "ex": "请", "exmean": "просить", "mn": "Молодой росток над луной.", "expy": "qǐng"},
+  {"r": "革", "py": "gé", "mean": "кожа (выделанная)", "ex": "鞋", "exmean": "обувь", "mn": "Растянутая шкура с рогами.", "expy": "xié"},
+  {"r": "页", "py": "yè", "mean": "голова / страница", "ex": "题", "exmean": "тема", "mn": "Голова с волосами — лист.", "expy": "tí"},
+  {"r": "风", "py": "fēng", "mean": "ветер", "ex": "飘", "exmean": "развеваться", "mn": "Парус, наполненный ветром.", "expy": "piāo"},
+  {"r": "骨", "py": "gǔ", "mean": "кость", "ex": "滑", "exmean": "скользкий", "mn": "Сустав кости.", "expy": "huá"},
+  {"r": "鬼", "py": "guǐ", "mean": "призрак", "ex": "魂", "exmean": "душа", "mn": "Голова духа с хвостом.", "expy": "hún"},
+  {"r": "黑", "py": "hēi", "mean": "чёрный", "ex": "默", "exmean": "молчать", "mn": "Копоть над огнём в дымоходе.", "expy": "mò"},
+  {"r": "牙", "py": "yá", "mean": "зуб / клык", "ex": "芽", "exmean": "росток", "mn": "Сцепленные клыки.", "expy": "yá"},
+  {"r": "八", "py": "bā", "mean": "восемь / делить", "ex": "分", "expy": "fēn", "exmean": "делить", "mn": "Две расходящиеся черты — разделение."},
+  {"r": "几", "py": "jī", "mean": "столик / сколько", "ex": "机", "expy": "jī", "exmean": "машина", "mn": "Низкий столик на ножках."},
+  {"r": "工", "py": "gōng", "mean": "работа / труд", "ex": "江", "expy": "jiāng", "exmean": "река", "mn": "Плотницкий угольник."},
+  {"r": "干", "py": "gān", "mean": "сухой / щит", "ex": "汗", "expy": "hàn", "exmean": "пот", "mn": "Поднятый вверх щит-пест."},
+  {"r": "文", "py": "wén", "mean": "письмена / культура", "ex": "纹", "expy": "wén", "exmean": "узор", "mn": "Скрещённые линии — письмо, узор."},
+  {"r": "爪", "py": "zhǎo", "mean": "коготь / лапа", "ex": "抓", "expy": "zhuā", "exmean": "хватать", "mn": "Когтистая лапа, загребающая вниз."},
+  {"r": "片", "py": "piàn", "mean": "ломтик / пластина", "ex": "牌", "expy": "pái", "exmean": "табличка", "mn": "Расколотое бревно — дощечка."},
+  {"r": "生", "py": "shēng", "mean": "рождать / жизнь", "ex": "性", "expy": "xìng", "exmean": "характер", "mn": "Росток пробивается из земли — жизнь."},
+  {"r": "用", "py": "yòng", "mean": "использовать", "ex": "拥", "expy": "yōng", "exmean": "обнимать", "mn": "Ведро с делениями — применяй по мерке."},
+  {"r": "白", "py": "bái", "mean": "белый", "ex": "的", "expy": "de", "exmean": "частица притяжки", "mn": "Луч солнца — белый свет."},
+  {"r": "矛", "py": "máo", "mean": "копьё", "ex": "柔", "expy": "róu", "exmean": "мягкий", "mn": "Древко копья с петлёй и остриём."},
+  {"r": "示/礻", "py": "shì", "mean": "алтарь / ритуал", "ex": "礼", "expy": "lǐ", "exmean": "вежливость", "mn": "Алтарь на подставке — знак свыше."},
+  {"r": "羊", "py": "yáng", "mean": "овца / баран", "ex": "样", "expy": "yàng", "exmean": "вид / образец", "mn": "Голова барана с рогами и мордой."},
+  {"r": "羽", "py": "yǔ", "mean": "перо / крылья", "ex": "翅", "expy": "chì", "exmean": "крыло", "mn": "Два сложенных крыла с перьями."},
+  {"r": "而", "py": "ér", "mean": "и / а (союз)", "ex": "需", "expy": "xū", "exmean": "требоваться", "mn": "Свисающие усы-борода под чертой."},
+  {"r": "自", "py": "zì", "mean": "сам / нос", "ex": "息", "expy": "xī", "exmean": "дыхание", "mn": "Нос на лице — указываешь на себя."},
+  {"r": "臼", "py": "jiù", "mean": "ступа", "ex": "舅", "expy": "jiù", "exmean": "дядя", "mn": "Каменная ступа с зёрнами внутри."},
+  {"r": "色", "py": "sè", "mean": "цвет", "ex": "绝", "expy": "jué", "exmean": "крайний", "mn": "Человек над печатью — выражение лица, цвет."},
+  {"r": "血", "py": "xuè", "mean": "кровь", "ex": "恤", "expy": "xù", "exmean": "сочувствовать", "mn": "Капля над сосудом — жертвенная кровь."},
+  {"r": "谷", "py": "gǔ", "mean": "долина / ущелье", "ex": "俗", "expy": "sú", "exmean": "обычай", "mn": "Ущелье со входом и устьем-ртом."},
+  {"r": "豕", "py": "shǐ", "mean": "свинья", "ex": "逐", "expy": "zhú", "exmean": "гнаться", "mn": "Кабан с хребтом, ногами и хвостом."},
+  {"r": "赤", "py": "chì", "mean": "красный / голый", "ex": "赫", "expy": "hè", "exmean": "внушительный", "mn": "Большой человек у огня — краснеет докрасна."},
+  {"r": "辰", "py": "chén", "mean": "время / 5-й знак", "ex": "晨", "expy": "chén", "exmean": "рассвет", "mn": "Раскрытая раковина моллюска — звёздное время."},
+  {"r": "面", "py": "miàn", "mean": "лицо / поверхность", "ex": "面", "expy": "miàn", "exmean": "лицо", "mn": "Контур лица с глазом внутри."},
+  {"r": "音", "py": "yīn", "mean": "звук", "ex": "意", "expy": "yì", "exmean": "смысл", "mn": "Звук изо рта со словом внутри."},
+  {"r": "首", "py": "shǒu", "mean": "голова / глава", "ex": "道", "expy": "dào", "exmean": "путь", "mn": "Голова с волосами и лицом."},
+  {"r": "香", "py": "xiāng", "mean": "аромат", "ex": "香", "expy": "xiāng", "exmean": "аромат", "mn": "Злак над солнцем — запах зерна."},
+  {"r": "鹿", "py": "lù", "mean": "олень", "ex": "鹿", "expy": "lù", "exmean": "олень", "mn": "Олень с рогами, телом и ногами."},
+  {"r": "麦", "py": "mài", "mean": "пшеница", "ex": "麦", "expy": "mài", "exmean": "пшеница", "mn": "Колос пшеницы с корнями."},
+  {"r": "麻", "py": "má", "mean": "конопля / онеметь", "ex": "摩", "expy": "mó", "exmean": "тереть", "mn": "Стебли конопли под навесом."},
+  {"r": "黄", "py": "huáng", "mean": "жёлтый", "ex": "横", "expy": "héng", "exmean": "поперечный", "mn": "Поле под солнцем — жёлтая земля."},
+  {"r": "鼠", "py": "shǔ", "mean": "мышь / крыса", "ex": "鼠", "expy": "shǔ", "exmean": "крыса", "mn": "Крыса с зубами, лапами и хвостом."},
+  {"r": "鼻", "py": "bí", "mean": "нос", "ex": "鼻", "expy": "bí", "exmean": "нос", "mn": "Нос над полем-лёгкими и подставкой."},
+  {"r": "齿", "py": "chǐ", "mean": "зубы", "ex": "龄", "expy": "líng", "exmean": "возраст", "mn": "Рот с рядами зубов внутри."},
+  {"r": "龙", "py": "lóng", "mean": "дракон", "ex": "笼", "expy": "lóng", "exmean": "клетка", "mn": "Извивающийся дракон с гребнем."}
+];
+const KEY = "radicals_progress_v2";
+const PKEY = "radicals_newperday";
+const INTERVALS = [0, 1, 2, 4, 7, 15, 30]; // дни по «коробкам» Лейтнера
+const DAY = 86400000;
+const today = () => Math.floor(Date.now() / DAY);
+
+let prog = JSON.parse(localStorage.getItem(KEY) || "{}");
+let newPerDay = parseInt(localStorage.getItem(PKEY) || "10", 10);
+function save(){ localStorage.setItem(KEY, JSON.stringify(prog)); }
+
+// мета дневного счётчика новых
+function meta(){
+  const t = today();
+  if(!prog.__meta || prog.__meta.d !== t) prog.__meta = { d: t, n: 0 };
+  return prog.__meta;
+}
+function seen(i){ return !!(prog[i] && prog[i].seen); }
+
+let queue = [], cur = null, flipped = false;
+function buildQueue(){
+  const t = today();
+  meta();
+  const reviews = [], forced = [], fresh = [];
+  DATA.forEach((_, i) => {
+    const p = prog[i];
+    if(p && p.seen){
+      if((p.due ?? t) <= t) reviews.push(i);              // повтор подошёл
+    } else if(p && p.force && (p.due ?? t) <= t){
+      forced.push(i);                                     // вручную добавлен «Учить»
+    } else if(!p || (p.due ?? t) <= t){
+      fresh.push(i);                                      // новый, не отложенный
+    }
+  });
+  const allowed = Math.max(0, newPerDay - prog.__meta.n);
+  const newItems = forced.concat(fresh.slice(0, allowed));
+  queue = reviews.concat(newItems);
+}
+
+function refreshStats(){
+  document.getElementById("total").textContent = DATA.length;
+  document.getElementById("due").textContent = queue.length;
+  document.getElementById("newToday").textContent = prog.__meta ? prog.__meta.n : 0;
+  const learned = DATA.filter((_, i) => seen(i) && (prog[i].box || 0) >= 4).length;
+  document.getElementById("learned").textContent = learned;
+}
+
+const card = document.getElementById("card");
+const btns = document.getElementById("btns");
+const doneEl = document.getElementById("done");
+
+function show(){
+  if(queue.length === 0){
+    card.classList.add("hidden"); btns.classList.add("hidden");
+    doneEl.classList.remove("hidden"); refreshStats(); return;
+  }
+  card.classList.remove("hidden"); doneEl.classList.add("hidden");
+  cur = queue[0];
+  const d = DATA[cur];
+  flipped = false;
+  card.classList.remove("flip");
+  btns.classList.add("hidden");
+  document.getElementById("glyph").textContent = d.r;
+  document.getElementById("bglyph").textContent = d.r;
+  document.getElementById("py").textContent = d.py;
+  document.getElementById("mean").textContent = d.mean;
+  document.getElementById("mn").textContent = "💡 " + d.mn;
+  document.getElementById("ex").innerHTML = "в иероглифе <b>" + d.ex + "</b> <span style=\"color:var(--accent)\">" + d.expy + "</span> — " + d.exmean;
+  refreshStats();
+}
+
+// --- Озвучка (если форма записана как 氵(水) — читаем 水; убираем пометки 左/右) ---
+function voiceChar(r){ const m = r.match(/\(([^)]+)\)/); let c = m ? m[1] : r; return c.replace(/[左右]/g,""); }
+let zhVoice = null;
+function pickVoice(){
+  if(!("speechSynthesis" in window)) return;
+  const vs = speechSynthesis.getVoices();
+  zhVoice =
+    vs.find(v => /zh[-_]CN/i.test(v.lang) && /google|网络|premium|natural|普通话|mandarin/i.test(v.name)) ||
+    vs.find(v => /zh[-_]CN/i.test(v.lang)) ||
+    vs.find(v => /^zh/i.test(v.lang)) || null;
+}
+if("speechSynthesis" in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function speakTTS(){
+  if(cur === null || !("speechSynthesis" in window)) return;
+  const u = new SpeechSynthesisUtterance(voiceChar(DATA[cur].r));
+  u.lang = "zh-CN"; u.rate = 0.75;
+  if(zhVoice) u.voice = zhVoice;
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+function speak(){
+  if(cur === null) return;
+  // сначала — заранее записанный mp3 (качественнее), иначе системный голос
+  const a = new Audio("audio/" + cur + ".mp3");
+  a.play().catch(() => speakTTS());
+}
+document.getElementById("speak").onclick = (e) => { e.stopPropagation(); speak(); };
+
+card.onclick = () => {
+  if(queue.length === 0) return;
+  flipped = !flipped;
+  card.classList.toggle("flip", flipped);
+  btns.classList.toggle("hidden", !flipped);
+  if(flipped) speak();
+};
+
+function answer(known){
+  const wasNew = !seen(cur);
+  if(!prog[cur]) prog[cur] = { box: 0 };
+  const s = prog[cur];
+  if(wasNew){ s.seen = true; s.force = false; meta().n++; }
+  if(known) s.box = Math.min((s.box || 0) + 1, INTERVALS.length - 1);
+  else s.box = 1;
+  s.due = today() + INTERVALS[s.box];
+  save();
+  queue.shift();
+  if(!known) queue.push(cur);
+  show();
+}
+document.getElementById("bok").onclick = () => answer(true);
+document.getElementById("bno").onclick = () => answer(false);
+
+document.getElementById("reset").onclick = () => {
+  if(confirm("Сбросить весь прогресс?")){ prog = {}; save(); buildQueue(); show(); renderList(); }
+};
+
+// --- Настройка «новых в день» ---
+const perdayInput = document.getElementById("perday");
+perdayInput.value = newPerDay;
+perdayInput.onchange = () => {
+  let v = parseInt(perdayInput.value, 10);
+  if(isNaN(v) || v < 1) v = 1; if(v > 100) v = 100;
+  newPerDay = v; perdayInput.value = v;
+  localStorage.setItem(PKEY, String(v));
+  buildQueue(); show();
+};
+
+// --- Экран «Все ключи» ---
+const listScreen = document.getElementById("listScreen");
+function statusBadge(i){
+  if(!seen(i)) return '<span class="badge b-new">новый</span>';
+  if((prog[i].box || 0) >= 4) return '<span class="badge b-done">выучен</span>';
+  return '<span class="badge b-learn">учится</span>';
+}
+function dueText(i){
+  const p = prog[i];
+  if(!p) return "ещё не в обучении";
+  if(!p.seen && p.force) return "добавлен на сегодня";
+  if(!p.seen && (p.due ?? today()) > today()) return "отложен";
+  const d = (p.due ?? today()) - today();
+  if(d <= 0) return "в очереди сегодня";
+  if(d === 1) return "повтор завтра";
+  return "повтор через " + d + " дн.";
+}
+function renderList(){
+  let html = "";
+  DATA.forEach((d, i) => {
+    html += '<div class="row">' +
+      '<div class="rg">' + d.r + '</div>' +
+      '<div class="rinfo">' +
+        '<div class="rtop"><span class="rpy">' + d.py + '</span>' + d.mean + ' ' + statusBadge(i) + '</div>' +
+        '<div class="rbot">' + dueText(i) + '</div>' +
+      '</div>' +
+      '<div class="ract">' +
+        '<button class="learn" data-learn="' + i + '">Учить</button>' +
+        '<button class="delay" data-delay="' + i + '">Отложить</button>' +
+      '</div>' +
+    '</div>';
+  });
+  listScreen.innerHTML = html;
+}
+listScreen.addEventListener("click", (e) => {
+  const l = e.target.getAttribute("data-learn");
+  const dl = e.target.getAttribute("data-delay");
+  if(l !== null){ const i = +l; if(!prog[i]) prog[i] = { box: 0 }; prog[i].due = today(); prog[i].force = true; save(); }
+  if(dl !== null){ const i = +dl; if(!prog[i]) prog[i] = { box: 0 }; prog[i].due = today() + 30; prog[i].force = false; save(); }
+  if(l !== null || dl !== null){ buildQueue(); renderList(); refreshStats(); }
+});
+
+// --- Переключение вкладок ---
+const trainScreen = document.getElementById("trainScreen");
+const tabTrain = document.getElementById("tabTrain");
+const tabList = document.getElementById("tabList");
+function setTab(list){
+  tabList.classList.toggle("on", list);
+  tabTrain.classList.toggle("on", !list);
+  listScreen.style.display = list ? "block" : "none";
+  trainScreen.style.display = list ? "none" : "block";
+  if(list) renderList(); else { buildQueue(); show(); }
+}
+tabTrain.onclick = () => setTab(false);
+tabList.onclick = () => setTab(true);
+
+buildQueue();
+show();
+</script>
+</body>
+</html>
