@@ -90,11 +90,11 @@
 <div id="trainScreen">
   <div class="bar">
     <span>На сегодня: <b id="due">0</b></span>
-    <span>Новых сегодня: <b id="newToday">0</b></span>
+    <span>Новых за сессию: <b id="newToday">0</b></span>
     <span>Выучено: <b id="learned">0</b> / <b id="total">0</b></span>
   </div>
   <div class="setting">
-    Новых ключей в день:
+    Новых ключей за сессию:
     <input type="number" id="perday" min="1" max="100" step="1">
   </div>
 
@@ -119,7 +119,7 @@
   </div>
 
   <div id="done" class="done hidden">
-    <p><b>На сегодня всё.</b><br>Лимит новых на день исчерпан или повторов пока нет. Можно поднять лимит выше или добавить ключи вручную во вкладке «Все ключи».</p>
+    <p><b>Сессия пройдена.</b><br>Лимит новых на эту сессию исчерпан. Перезайди (обнови страницу), чтобы начать новую сессию с новой порцией ключей, либо подними лимит выше.</p>
   </div>
 
   <button class="reset" id="reset">Сбросить весь прогресс</button>
@@ -277,18 +277,13 @@ let prog = JSON.parse(localStorage.getItem(KEY) || "{}");
 let newPerDay = parseInt(localStorage.getItem(PKEY) || "10", 10);
 function save(){ localStorage.setItem(KEY, JSON.stringify(prog)); }
 
-// мета дневного счётчика новых
-function meta(){
-  const t = today();
-  if(!prog.__meta || prog.__meta.d !== t) prog.__meta = { d: t, n: 0 };
-  return prog.__meta;
-}
+// счётчик новых за ТЕКУЩУЮ сессию (не сохраняется — обнуляется при каждом заходе)
+let sessionNew = 0;
 function seen(i){ return !!(prog[i] && prog[i].seen); }
 
 let queue = [], cur = null, flipped = false;
 function buildQueue(){
   const t = today();
-  meta();
   const reviews = [], forced = [], fresh = [];
   DATA.forEach((_, i) => {
     const p = prog[i];
@@ -300,7 +295,7 @@ function buildQueue(){
       fresh.push(i);                                      // новый, не отложенный
     }
   });
-  const allowed = Math.max(0, newPerDay - prog.__meta.n);
+  const allowed = Math.max(0, newPerDay - sessionNew);
   const newItems = forced.concat(fresh.slice(0, allowed));
   queue = reviews.concat(newItems);
 }
@@ -308,7 +303,7 @@ function buildQueue(){
 function refreshStats(){
   document.getElementById("total").textContent = DATA.length;
   document.getElementById("due").textContent = queue.length;
-  document.getElementById("newToday").textContent = prog.__meta ? prog.__meta.n : 0;
+  document.getElementById("newToday").textContent = sessionNew;
   const learned = DATA.filter((_, i) => seen(i) && (prog[i].box || 0) >= 4).length;
   document.getElementById("learned").textContent = learned;
 }
@@ -376,7 +371,7 @@ function answer(known){
   const wasNew = !seen(cur);
   if(!prog[cur]) prog[cur] = { box: 0 };
   const s = prog[cur];
-  if(wasNew){ s.seen = true; s.force = false; meta().n++; }
+  if(wasNew){ s.seen = true; s.force = false; sessionNew++; }
   if(known) s.box = Math.min((s.box || 0) + 1, INTERVALS.length - 1);
   else s.box = 1;
   s.due = today() + INTERVALS[s.box];
@@ -392,7 +387,7 @@ document.getElementById("reset").onclick = () => {
   if(confirm("Сбросить весь прогресс?")){ prog = {}; save(); buildQueue(); show(); renderList(); }
 };
 
-// --- Настройка «новых в день» ---
+// --- Настройка «новых за сессию» ---
 const perdayInput = document.getElementById("perday");
 perdayInput.value = newPerDay;
 perdayInput.onchange = () => {
