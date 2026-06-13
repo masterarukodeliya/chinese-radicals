@@ -29,10 +29,17 @@
   .bar{display:flex;gap:14px;font-size:13px;color:var(--dim);margin-bottom:10px;flex-wrap:wrap;justify-content:center}
   .bar b{color:var(--ink)}
   .setting{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim);margin-bottom:14px}
-  .setting input{width:60px;background:var(--card2);color:var(--ink);border:1px solid var(--line);
+  .setting input[type=number]{width:60px;background:var(--card2);color:var(--ink);border:1px solid var(--line);
     border-radius:8px;padding:5px 8px;font-size:14px;text-align:center}
+  .setting .chk{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  .setting .chk input{width:16px;height:16px;accent-color:var(--accent)}
   /* --- Тренировка --- */
-  .card{width:100%;max-width:360px;aspect-ratio:3/4;background:var(--card);
+  .cardtag{position:absolute;top:12px;right:14px;font-size:12px;font-weight:700;
+    padding:3px 10px;border-radius:8px;color:#0f1115;display:none}
+  .cardtag.show{display:block}
+  .cardtag.rep{background:var(--no)}   /* повтор */
+  .cardtag.new{background:var(--new)}  /* новый */
+  .card{position:relative;width:100%;max-width:360px;aspect-ratio:3/4;background:var(--card);
     border:1px solid var(--line);border-radius:20px;cursor:pointer;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     padding:22px;text-align:center;user-select:none;transition:background .15s}
@@ -89,16 +96,18 @@
 <!-- ЭКРАН ТРЕНИРОВКИ -->
 <div id="trainScreen">
   <div class="bar">
-    <span>На сегодня: <b id="due">0</b></span>
-    <span>Новых за сессию: <b id="newToday">0</b></span>
-    <span>Выучено: <b id="learned">0</b> / <b id="total">0</b></span>
+    <span>В очереди: <b id="due">0</b></span>
+    <span>Изучается: <b id="learning">0</b></span>
+    <span>Освоено: <b id="learned">0</b>/<b id="total">0</b></span>
   </div>
   <div class="setting">
-    Новых ключей за сессию:
+    Новых за сессию:
     <input type="number" id="perday" min="1" max="100" step="1">
+    <label class="chk"><input type="checkbox" id="revchk" checked> повторы</label>
   </div>
 
   <div id="card" class="card">
+    <div class="cardtag" id="cardtag"></div>
     <div class="front">
       <div class="glyph" id="glyph">人</div>
       <div class="hint">нажми, чтобы проверить</div>
@@ -275,6 +284,7 @@ const today = () => Math.floor(Date.now() / DAY);
 
 let prog = JSON.parse(localStorage.getItem(KEY) || "{}");
 let newPerDay = parseInt(localStorage.getItem(PKEY) || "10", 10);
+let includeReviews = localStorage.getItem("radicals_reviews") !== "0";
 function save(){ localStorage.setItem(KEY, JSON.stringify(prog)); }
 
 // счётчик новых за ТЕКУЩУЮ сессию (не сохраняется — обнуляется при каждом заходе)
@@ -297,14 +307,17 @@ function buildQueue(){
   });
   const allowed = Math.max(0, newPerDay - sessionNew);
   const newItems = forced.concat(fresh.slice(0, allowed));
-  queue = reviews.concat(newItems);
+  // сначала новые (ощущение продвижения), затем повторы; повторы можно отключить
+  queue = includeReviews ? newItems.concat(reviews) : newItems;
 }
 
 function refreshStats(){
   document.getElementById("total").textContent = DATA.length;
   document.getElementById("due").textContent = queue.length;
-  document.getElementById("newToday").textContent = sessionNew;
+  // изучается — начатые, но ещё не освоённые; освоено — прошедшие 4+ повтора
+  const learning = DATA.filter((_, i) => seen(i) && (prog[i].box || 0) < 4).length;
   const learned = DATA.filter((_, i) => seen(i) && (prog[i].box || 0) >= 4).length;
+  document.getElementById("learning").textContent = learning;
   document.getElementById("learned").textContent = learned;
 }
 
@@ -323,6 +336,10 @@ function show(){
   flipped = false;
   card.classList.remove("flip");
   btns.classList.add("hidden");
+  // метка: повтор (уже изучается) или новый ключ
+  const tag = document.getElementById("cardtag");
+  if(seen(cur)){ tag.className = "cardtag show rep"; tag.textContent = "↻ Повтор"; }
+  else { tag.className = "cardtag show new"; tag.textContent = "Новый"; }
   document.getElementById("glyph").textContent = d.r;
   document.getElementById("bglyph").textContent = d.r;
   document.getElementById("py").textContent = d.py;
@@ -395,6 +412,15 @@ perdayInput.onchange = () => {
   if(isNaN(v) || v < 1) v = 1; if(v > 100) v = 100;
   newPerDay = v; perdayInput.value = v;
   localStorage.setItem(PKEY, String(v));
+  buildQueue(); show();
+};
+
+// переключатель повторов
+const revChk = document.getElementById("revchk");
+revChk.checked = includeReviews;
+revChk.onchange = () => {
+  includeReviews = revChk.checked;
+  localStorage.setItem("radicals_reviews", includeReviews ? "1" : "0");
   buildQueue(); show();
 };
 
