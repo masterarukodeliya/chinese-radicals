@@ -39,6 +39,7 @@
   .cardtag.show{display:block}
   .cardtag.rep{background:var(--no)}   /* повтор */
   .cardtag.new{background:var(--new)}  /* новый */
+  .cardtag.old{background:var(--line);color:var(--dim)} /* просмотр истории */
   .card{position:relative;width:100%;max-width:360px;aspect-ratio:3/4;background:var(--card);
     border:1px solid var(--line);border-radius:20px;cursor:pointer;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -62,6 +63,11 @@
     font-weight:600;color:#0f1115;cursor:pointer}
   .no{background:var(--no)} .ok{background:var(--ok)}
   .btns.hidden{visibility:hidden}
+  .navbtns{display:flex;gap:12px;width:100%;max-width:360px;margin-top:10px}
+  .navbtns button{flex:1;padding:10px 0;border:1px solid var(--line);border-radius:12px;
+    font-size:14px;font-weight:600;color:var(--ink);background:var(--card2);cursor:pointer}
+  .navbtns button:disabled{opacity:.35;cursor:default}
+  .navbtns.hidden{display:none}
   .done{text-align:center;margin-top:40px;color:var(--dim);max-width:340px}
   .done b{color:var(--ink)}
   .reset{margin-top:24px;background:none;color:var(--dim);border:1px solid var(--line);
@@ -127,6 +133,11 @@
     <button class="ok" id="bok">Знаю</button>
   </div>
 
+  <div class="navbtns hidden" id="navbtns">
+    <button id="bprev">← Назад</button>
+    <button id="bnext">Вперёд →</button>
+  </div>
+
   <div id="done" class="done hidden">
     <p><b>Сессия пройдена.</b><br>Лимит новых на эту сессию исчерпан. Перезайди (обнови страницу), чтобы начать новую сессию с новой порцией ключей, либо подними лимит выше.</p>
   </div>
@@ -184,7 +195,7 @@ const DATA = [
   {"r": "宀", "py": "mián", "mean": "крыша / дом", "ex": "家", "exmean": "дом", "mn": "Крыша с трубой над домом.", "expy": "jiā"},
   {"r": "广", "py": "guǎng", "mean": "навес", "ex": "店", "exmean": "магазин", "mn": "Навес, пристроенный к стене.", "expy": "diàn"},
   {"r": "厂", "py": "chǎng", "mean": "обрыв / навес", "ex": "厅", "exmean": "зал", "mn": "Скала с козырьком.", "expy": "tīng"},
-  {"r": "疒", "py": "nì", "mean": "болезнь", "ex": "病", "exmean": "болезнь", "mn": "Человек в кровати под навесом — болеет.", "expy": "bìng"},
+  {"r": "疒", "py": "nè", "mean": "болезнь", "ex": "病", "exmean": "болезнь", "mn": "Человек в кровати под навесом — болеет.", "expy": "bìng"},
   {"r": "辶", "py": "chuò", "mean": "движение / дорога", "ex": "这", "exmean": "это", "mn": "Шаг с дорожкой-волной снизу.", "expy": "zhè"},
   {"r": "冫", "py": "bīng", "mean": "лёд", "ex": "冷", "exmean": "холодно", "mn": "Две льдинки.", "expy": "lěng"},
   {"r": "彳", "py": "chì", "mean": "шаг", "ex": "很", "exmean": "очень", "mn": "Двойной шаг — перекрёсток дорог.", "expy": "hěn"},
@@ -292,6 +303,8 @@ let sessionNew = 0;
 function seen(i){ return !!(prog[i] && prog[i].seen); }
 
 let queue = [], cur = null, flipped = false;
+// история показанных карточек в сессии — для кнопок «Назад»/«Вперёд»
+let history = [], histPos = -1;
 function buildQueue(){
   const t = today();
   const reviews = [], forced = [], fresh = [];
@@ -324,21 +337,22 @@ function refreshStats(){
 const card = document.getElementById("card");
 const btns = document.getElementById("btns");
 const doneEl = document.getElementById("done");
+const navbtns = document.getElementById("navbtns");
+const bprev = document.getElementById("bprev");
+const bnext = document.getElementById("bnext");
 
-function show(){
-  if(queue.length === 0){
-    card.classList.add("hidden"); btns.classList.add("hidden");
-    doneEl.classList.remove("hidden"); refreshStats(); return;
-  }
-  card.classList.remove("hidden"); doneEl.classList.add("hidden");
-  cur = queue[0];
-  const d = DATA[cur];
+// отрисовать карточку по индексу из DATA (без изменения очереди)
+function renderCard(i){
+  cur = i;
+  const d = DATA[i];
   flipped = false;
   card.classList.remove("flip");
   btns.classList.add("hidden");
-  // метка: повтор (уже изучается) или новый ключ
+  const reviewing = histPos < history.length - 1;
+  // метка: просмотр истории / повтор / новый ключ
   const tag = document.getElementById("cardtag");
-  if(seen(cur)){ tag.className = "cardtag show rep"; tag.textContent = "↻ Повтор"; }
+  if(reviewing){ tag.className = "cardtag show old"; tag.textContent = "Просмотр"; }
+  else if(seen(i)){ tag.className = "cardtag show rep"; tag.textContent = "↻ Повтор"; }
   else { tag.className = "cardtag show new"; tag.textContent = "Новый"; }
   document.getElementById("glyph").textContent = d.r;
   document.getElementById("bglyph").textContent = d.r;
@@ -346,7 +360,27 @@ function show(){
   document.getElementById("mean").textContent = d.mean;
   document.getElementById("mn").textContent = "💡 " + d.mn;
   document.getElementById("ex").innerHTML = "в иероглифе <b>" + d.ex + "</b> <span style=\"color:var(--accent)\">" + d.expy + "</span> — " + d.exmean;
+  updateNav();
   refreshStats();
+}
+
+function updateNav(){
+  bprev.disabled = histPos <= 0;
+  bnext.disabled = histPos >= history.length - 1;
+}
+
+function show(){
+  if(queue.length === 0){
+    card.classList.add("hidden"); btns.classList.add("hidden");
+    navbtns.classList.add("hidden");
+    doneEl.classList.remove("hidden"); refreshStats(); return;
+  }
+  card.classList.remove("hidden"); doneEl.classList.add("hidden");
+  navbtns.classList.remove("hidden");
+  const next = queue[0];
+  if(history[history.length - 1] !== next) history.push(next);
+  histPos = history.length - 1;
+  renderCard(next);
 }
 
 // --- Озвучка (если форма записана как 氵(水) — читаем 水; убираем пометки 左/右) ---
@@ -377,11 +411,22 @@ function speak(){
 document.getElementById("speak").onclick = (e) => { e.stopPropagation(); speak(); };
 
 card.onclick = () => {
-  if(queue.length === 0) return;
+  if(cur === null) return;
   flipped = !flipped;
   card.classList.toggle("flip", flipped);
-  btns.classList.toggle("hidden", !flipped);
+  // в режиме просмотра истории кнопки «Знаю/Не знаю» не показываем — карточка уже оценена
+  const reviewing = histPos < history.length - 1;
+  btns.classList.toggle("hidden", !flipped || reviewing);
   if(flipped) speak();
+};
+
+bprev.onclick = (e) => {
+  e.stopPropagation();
+  if(histPos > 0){ histPos--; renderCard(history[histPos]); }
+};
+bnext.onclick = (e) => {
+  e.stopPropagation();
+  if(histPos < history.length - 1){ histPos++; renderCard(history[histPos]); }
 };
 
 function answer(known){
