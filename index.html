@@ -87,6 +87,14 @@
     border-radius:8px;padding:6px 9px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
   .ract .learn{border-color:var(--ok);color:var(--ok)}
   .ract .delay{border-color:var(--dim)}
+  /* --- Архаичные ключи --- */
+  #extraScreen{width:100%;max-width:440px;display:none}
+  .extra-head{color:var(--dim);font-size:13px;margin-bottom:12px}
+  .extra-head p{margin:0 0 10px}
+  .addall{width:100%;border:1px solid var(--ok);color:var(--ok);background:none;
+    border-radius:10px;padding:9px;font-size:13px;font-weight:600;cursor:pointer}
+  .rkx{font-size:11px;color:var(--dim)}
+  .ract .added{border-color:var(--dim);color:var(--dim)}
   .hidden{display:none!important}
 </style>
 </head>
@@ -97,6 +105,7 @@
 <div class="tabs">
   <button class="tab on" id="tabTrain">Тренировка</button>
   <button class="tab" id="tabList">Все ключи</button>
+  <button class="tab" id="tabExtra">Архаичные</button>
 </div>
 
 <!-- ЭКРАН ТРЕНИРОВКИ -->
@@ -147,6 +156,15 @@
 
 <!-- ЭКРАН СПИСКА -->
 <div id="listScreen"></div>
+
+<!-- ЭКРАН АРХАИЧНЫХ КЛЮЧЕЙ -->
+<div id="extraScreen">
+  <div class="extra-head">
+    <p>Ключи Канси, не вошедшие в основной набор: архаичные и редкие. Для современного чтения почти не нужны, но при желании их можно добавить в обучение.</p>
+    <button class="addall" id="addAll">Добавить все в обучение</button>
+  </div>
+  <div id="extraList"></div>
+</div>
 
 <script>
 const DATA = [
@@ -287,6 +305,89 @@ const DATA = [
   {"r": "齿", "py": "chǐ", "mean": "зубы", "ex": "龄", "expy": "líng", "exmean": "возраст", "mn": "Рот с рядами зубов внутри."},
   {"r": "龙", "py": "lóng", "mean": "дракон", "ex": "笼", "expy": "lóng", "exmean": "клетка", "mn": "Извивающийся дракон с гребнем."}
 ];
+const CORE = DATA.length;
+const EXTRA = [
+  {"r": "一", "py": "yī", "mean": "один, единица", "kx": 1, "extra": true},
+  {"r": "丨", "py": "gǔn", "mean": "вертикальная черта", "kx": 2, "extra": true},
+  {"r": "丶", "py": "zhǔ", "mean": "точка", "kx": 3, "extra": true},
+  {"r": "丿", "py": "piě", "mean": "откидная влево", "kx": 4, "extra": true},
+  {"r": "乙", "py": "yǐ", "mean": "второй (цикл. знак)", "kx": 5, "extra": true},
+  {"r": "亅", "py": "jué", "mean": "вертикаль с крюком", "kx": 6, "extra": true},
+  {"r": "二", "py": "èr", "mean": "два", "kx": 7, "extra": true},
+  {"r": "亠", "py": "tóu", "mean": "крышка (тоу)", "kx": 8, "extra": true},
+  {"r": "儿", "py": "ér", "mean": "ноги / идущий человек", "kx": 10, "extra": true},
+  {"r": "入", "py": "rù", "mean": "входить", "kx": 11, "extra": true},
+  {"r": "冂", "py": "jiōng", "mean": "границы, открытый короб", "kx": 13, "extra": true},
+  {"r": "冖", "py": "mì", "mean": "покрытие (ми)", "kx": 14, "extra": true},
+  {"r": "凵", "py": "qiǎn", "mean": "открытый сосуд, яма", "kx": 17, "extra": true},
+  {"r": "勹", "py": "bāo", "mean": "обхватывать, обёртка", "kx": 20, "extra": true},
+  {"r": "匕", "py": "bǐ", "mean": "ложка, кинжал", "kx": 21, "extra": true},
+  {"r": "匚", "py": "fāng", "mean": "короб (открыт справа)", "kx": 22, "extra": true},
+  {"r": "匸", "py": "xì", "mean": "прятать, укрытие", "kx": 23, "extra": true},
+  {"r": "十", "py": "shí", "mean": "десять", "kx": 24, "extra": true},
+  {"r": "卜", "py": "bǔ", "mean": "гадание", "kx": 25, "extra": true},
+  {"r": "卩", "py": "jié", "mean": "печать, коленопреклонённый", "kx": 26, "extra": true},
+  {"r": "厶", "py": "sī", "mean": "частный, сам", "kx": 28, "extra": true},
+  {"r": "囗", "py": "wéi", "mean": "ограда, окружение", "kx": 31, "extra": true},
+  {"r": "士", "py": "shì", "mean": "учёный, воин", "kx": 33, "extra": true},
+  {"r": "夂", "py": "zhǐ", "mean": "идти медленно", "kx": 34, "extra": true},
+  {"r": "夊", "py": "suī", "mean": "медленно тащиться", "kx": 35, "extra": true},
+  {"r": "夕", "py": "xī", "mean": "вечер, закат", "kx": 36, "extra": true},
+  {"r": "尢", "py": "yóu", "mean": "хромой", "kx": 43, "extra": true},
+  {"r": "屮", "py": "chè", "mean": "росток, побег", "kx": 45, "extra": true},
+  {"r": "巛", "py": "chuān", "mean": "река, поток", "kx": 47, "extra": true},
+  {"r": "己", "py": "jǐ", "mean": "сам; 6-й цикл. знак", "kx": 49, "extra": true},
+  {"r": "幺", "py": "yāo", "mean": "крошечный, нить", "kx": 52, "extra": true},
+  {"r": "廴", "py": "yǐn", "mean": "тянуться, шагать", "kx": 54, "extra": true},
+  {"r": "廾", "py": "gǒng", "mean": "две руки, держать", "kx": 55, "extra": true},
+  {"r": "弋", "py": "yì", "mean": "стрела на привязи", "kx": 56, "extra": true},
+  {"r": "彐", "py": "jì", "mean": "голова свиньи / рука", "kx": 58, "extra": true},
+  {"r": "彡", "py": "shān", "mean": "волоски, узор", "kx": 59, "extra": true},
+  {"r": "支", "py": "zhī", "mean": "ветвь, поддерживать", "kx": 65, "extra": true},
+  {"r": "斗", "py": "dòu", "mean": "ковш, доу (мера)", "kx": 68, "extra": true},
+  {"r": "无", "py": "wú", "mean": "не иметь, нет", "kx": 71, "extra": true},
+  {"r": "曰", "py": "yuē", "mean": "говорить, сказать", "kx": 73, "extra": true},
+  {"r": "殳", "py": "shū", "mean": "древковое оружие, бить", "kx": 79, "extra": true},
+  {"r": "毋", "py": "wú", "mean": "не, нельзя (запрет)", "kx": 80, "extra": true},
+  {"r": "比", "py": "bǐ", "mean": "сравнивать", "kx": 81, "extra": true},
+  {"r": "氏", "py": "shì", "mean": "род, фамилия", "kx": 83, "extra": true},
+  {"r": "爻", "py": "yáo", "mean": "черты гексаграммы", "kx": 89, "extra": true},
+  {"r": "爿", "py": "pán", "mean": "левая половина (доски)", "kx": 90, "extra": true},
+  {"r": "玄", "py": "xuán", "mean": "тёмный, тайный", "kx": 95, "extra": true},
+  {"r": "疋", "py": "pǐ", "mean": "штука ткани; нога", "kx": 103, "extra": true},
+  {"r": "癶", "py": "bō", "mean": "расходящиеся ноги", "kx": 105, "extra": true},
+  {"r": "禸", "py": "róu", "mean": "след зверя", "kx": 114, "extra": true},
+  {"r": "缶", "py": "fǒu", "mean": "глиняный сосуд", "kx": 121, "extra": true},
+  {"r": "耒", "py": "lěi", "mean": "соха, плуг", "kx": 127, "extra": true},
+  {"r": "聿", "py": "yù", "mean": "кисть для письма", "kx": 129, "extra": true},
+  {"r": "臣", "py": "chén", "mean": "чиновник, слуга", "kx": 131, "extra": true},
+  {"r": "舛", "py": "chuǎn", "mean": "идти вразнобой, ошибка", "kx": 136, "extra": true},
+  {"r": "艮", "py": "gěn", "mean": "твёрдый; гэн (триграмма)", "kx": 138, "extra": true},
+  {"r": "襾", "py": "yà", "mean": "покрывало", "kx": 146, "extra": true},
+  {"r": "豸", "py": "zhì", "mean": "дикий зверь", "kx": 153, "extra": true},
+  {"r": "釆", "py": "biàn", "mean": "различать, разделять", "kx": 165, "extra": true},
+  {"r": "長", "py": "zhǎng", "mean": "длинный, старший", "kx": 168, "extra": true},
+  {"r": "隶", "py": "lì", "mean": "раб; настигать", "kx": 171, "extra": true},
+  {"r": "非", "py": "fēi", "mean": "не, неправильный", "kx": 175, "extra": true},
+  {"r": "韋", "py": "wéi", "mean": "выделанная кожа", "kx": 178, "extra": true},
+  {"r": "韭", "py": "jiǔ", "mean": "лук-порей", "kx": 179, "extra": true},
+  {"r": "飛", "py": "fēi", "mean": "летать", "kx": 183, "extra": true},
+  {"r": "高", "py": "gāo", "mean": "высокий", "kx": 189, "extra": true},
+  {"r": "髟", "py": "biāo", "mean": "длинные волосы", "kx": 190, "extra": true},
+  {"r": "鬥", "py": "dòu", "mean": "драться, борьба", "kx": 191, "extra": true},
+  {"r": "鬯", "py": "chàng", "mean": "жертвенное вино", "kx": 192, "extra": true},
+  {"r": "鬲", "py": "gé", "mean": "котёл-треножник (ли)", "kx": 193, "extra": true},
+  {"r": "鹵", "py": "lǔ", "mean": "соль, солончак", "kx": 197, "extra": true},
+  {"r": "黍", "py": "shǔ", "mean": "просо клейкое", "kx": 202, "extra": true},
+  {"r": "黹", "py": "zhǐ", "mean": "вышивка", "kx": 204, "extra": true},
+  {"r": "黽", "py": "miǎn", "mean": "лягушка, жаба", "kx": 205, "extra": true},
+  {"r": "鼎", "py": "dǐng", "mean": "треножник дин", "kx": 206, "extra": true},
+  {"r": "鼓", "py": "gǔ", "mean": "барабан", "kx": 207, "extra": true},
+  {"r": "齊", "py": "qí", "mean": "ровный, одинаковый", "kx": 210, "extra": true},
+  {"r": "龜", "py": "guī", "mean": "черепаха", "kx": 213, "extra": true},
+  {"r": "龠", "py": "yuè", "mean": "флейта, свирель", "kx": 214, "extra": true}
+];
+EXTRA.forEach(e => DATA.push(e));
 const KEY = "radicals_progress_v2";
 const PKEY = "radicals_newperday";
 const INTERVALS = [0, 1, 2, 4, 7, 15, 30]; // дни по «коробкам» Лейтнера
@@ -310,6 +411,8 @@ function buildQueue(){
   const reviews = [], forced = [], fresh = [];
   DATA.forEach((_, i) => {
     const p = prog[i];
+    // архаичные ключи не попадают в очередь, пока их явно не добавили в обучение
+    if(i >= CORE && !(p && (p.seen || p.force))) return;
     if(p && p.seen){
       if((p.due ?? t) <= t) reviews.push(i);              // повтор подошёл
     } else if(p && p.force && (p.due ?? t) <= t){
@@ -325,7 +428,9 @@ function buildQueue(){
 }
 
 function refreshStats(){
-  document.getElementById("total").textContent = DATA.length;
+  // всего = основные 136 + архаичные, добавленные в обучение
+  const activeExtra = EXTRA.reduce((n, _, k) => n + (prog[CORE + k] ? 1 : 0), 0);
+  document.getElementById("total").textContent = CORE + activeExtra;
   document.getElementById("due").textContent = queue.length;
   // изучается — начатые, но ещё не освоённые; освоено — прошедшие 4+ повтора
   const learning = DATA.filter((_, i) => seen(i) && (prog[i].box || 0) < 4).length;
@@ -358,8 +463,13 @@ function renderCard(i){
   document.getElementById("bglyph").textContent = d.r;
   document.getElementById("py").textContent = d.py;
   document.getElementById("mean").textContent = d.mean;
-  document.getElementById("mn").textContent = "💡 " + d.mn;
-  document.getElementById("ex").innerHTML = "в иероглифе <b>" + d.ex + "</b> <span style=\"color:var(--accent)\">" + d.expy + "</span> — " + d.exmean;
+  // мнемоника и пример есть только у основных ключей; у архаичных карточка облегчённая
+  const mnEl = document.getElementById("mn");
+  const exEl = document.getElementById("ex");
+  if(d.mn){ mnEl.textContent = "💡 " + d.mn; mnEl.classList.remove("hidden"); }
+  else { mnEl.textContent = ""; mnEl.classList.add("hidden"); }
+  if(d.ex){ exEl.innerHTML = "в иероглифе <b>" + d.ex + "</b> <span style=\"color:var(--accent)\">" + d.expy + "</span> — " + d.exmean; exEl.classList.remove("hidden"); }
+  else { exEl.innerHTML = ""; exEl.classList.add("hidden"); }
   updateNav();
   refreshStats();
 }
@@ -497,7 +607,7 @@ function dueText(i){
 }
 function renderList(){
   let html = "";
-  DATA.forEach((d, i) => {
+  DATA.slice(0, CORE).forEach((d, i) => {
     html += '<div class="row">' +
       '<div class="rg">' + d.r + '</div>' +
       '<div class="rinfo">' +
@@ -520,19 +630,61 @@ listScreen.addEventListener("click", (e) => {
   if(l !== null || dl !== null){ buildQueue(); renderList(); refreshStats(); }
 });
 
+// --- Экран «Архаичные ключи» ---
+const extraScreen = document.getElementById("extraScreen");
+const extraListEl = document.getElementById("extraList");
+function renderExtra(){
+  let html = "";
+  EXTRA.forEach((d, k) => {
+    const i = CORE + k;
+    const added = !!prog[i];
+    html += '<div class="row">' +
+      '<div class="rg">' + d.r + '</div>' +
+      '<div class="rinfo">' +
+        '<div class="rtop"><span class="rpy">' + d.py + '</span>' + d.mean + '</div>' +
+        '<div class="rbot rkx">Канси № ' + d.kx + (added ? ' · ' + dueText(i) : '') + '</div>' +
+      '</div>' +
+      '<div class="ract">' +
+        (added
+          ? '<button class="added" data-remove="' + i + '">В обучении ✓</button>'
+          : '<button class="learn" data-add="' + i + '">В обучение</button>') +
+      '</div>' +
+    '</div>';
+  });
+  extraListEl.innerHTML = html;
+}
+extraScreen.addEventListener("click", (e) => {
+  const a = e.target.getAttribute("data-add");
+  const r = e.target.getAttribute("data-remove");
+  if(a !== null){ const i = +a; prog[i] = { box: 0, force: true, due: today() }; save(); }
+  if(r !== null){ const i = +r; delete prog[i]; save(); }
+  if(a !== null || r !== null){ buildQueue(); renderExtra(); refreshStats(); }
+});
+document.getElementById("addAll").onclick = () => {
+  if(!confirm("Добавить все 79 архаичных ключей в обучение?")) return;
+  EXTRA.forEach((_, k) => { const i = CORE + k; if(!prog[i]) prog[i] = { box: 0, force: true, due: today() }; });
+  save(); buildQueue(); renderExtra(); refreshStats();
+};
+
 // --- Переключение вкладок ---
 const trainScreen = document.getElementById("trainScreen");
 const tabTrain = document.getElementById("tabTrain");
 const tabList = document.getElementById("tabList");
-function setTab(list){
-  tabList.classList.toggle("on", list);
-  tabTrain.classList.toggle("on", !list);
-  listScreen.style.display = list ? "block" : "none";
-  trainScreen.style.display = list ? "none" : "block";
-  if(list) renderList(); else { buildQueue(); show(); }
+const tabExtra = document.getElementById("tabExtra");
+function setTab(name){
+  tabTrain.classList.toggle("on", name === "train");
+  tabList.classList.toggle("on", name === "list");
+  tabExtra.classList.toggle("on", name === "extra");
+  trainScreen.style.display = name === "train" ? "block" : "none";
+  listScreen.style.display = name === "list" ? "block" : "none";
+  extraScreen.style.display = name === "extra" ? "block" : "none";
+  if(name === "list") renderList();
+  else if(name === "extra") renderExtra();
+  else { buildQueue(); show(); }
 }
-tabTrain.onclick = () => setTab(false);
-tabList.onclick = () => setTab(true);
+tabTrain.onclick = () => setTab("train");
+tabList.onclick = () => setTab("list");
+tabExtra.onclick = () => setTab("extra");
 
 buildQueue();
 show();
