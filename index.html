@@ -565,7 +565,7 @@ document.getElementById("bok").onclick = () => answer(true);
 document.getElementById("bno").onclick = () => answer(false);
 
 document.getElementById("reset").onclick = () => {
-  if(confirm("Сбросить весь прогресс?")){ prog = {}; save(); buildQueue(); show(); renderList(); }
+  if(confirm("Сбросить весь прогресс?")){ prog = {}; save(); buildQueue(); show(); renderList(); renderExtra(); }
 };
 
 // --- Настройка «новых за сессию» ---
