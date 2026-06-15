@@ -384,7 +384,14 @@ function show(){
 }
 
 // --- Озвучка (если форма записана как 氵(水) — читаем 水; убираем пометки 左/右) ---
-function voiceChar(r){ const m = r.match(/\(([^)]+)\)/); let c = m ? m[1] : r; return c.replace(/[左右]/g,""); }
+const AUDIO_VER = "2026-06-15b";
+function voiceChar(r){
+  if(r.indexOf("阝") >= 0) return r.indexOf("右") >= 0 ? "邑" : "阜";
+  const m = r.match(/\(([^)]+)\)/);
+  let c = m ? m[1] : r;
+  c = c.replace(/[左右]/g, "");
+  return c || r[0];
+}
 let zhVoice = null;
 function pickVoice(){
   if(!("speechSynthesis" in window)) return;
@@ -405,7 +412,7 @@ function speakTTS(){
 function speak(){
   if(cur === null) return;
   // сначала — заранее записанный mp3 (качественнее), иначе системный голос
-  const a = new Audio("audio/" + cur + ".mp3");
+  const a = new Audio("audio/" + cur + ".mp3?v=" + AUDIO_VER);
   a.play().catch(() => speakTTS());
 }
 document.getElementById("speak").onclick = (e) => { e.stopPropagation(); speak(); };
