@@ -22,7 +22,7 @@
     display:flex;flex-direction:column;align-items:center;padding:16px 14px 40px}
   h1{font-size:18px;font-weight:600;margin:4px 0 2px;letter-spacing:.2px}
   .sub{color:var(--dim);font-size:13px;margin-bottom:14px;text-align:center}
-  .tabs{display:flex;gap:8px;margin-bottom:14px}
+  .tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;justify-content:center}
   .tab{padding:8px 16px;border-radius:10px;border:1px solid var(--line);background:none;
     color:var(--dim);font-size:14px;font-weight:600;cursor:pointer}
   .tab.on{background:var(--card2);color:var(--ink)}
@@ -116,7 +116,8 @@
 
 <div class="tabs">
   <button class="tab on" id="tabTrain">Тренировка</button>
-  <button class="tab" id="tabList">Все ключи</button>
+  <button class="tab" id="tabL1">Уровень 1</button>
+  <button class="tab" id="tabL2">Уровень 2</button>
   <button class="tab" id="tabExtra">Справочные</button>
 </div>
 
@@ -624,21 +625,13 @@ function levelBadge(lvl){
   if(lvl === 2) return '<span class="badge b-l2">доп.</span>';
   return '';
 }
+let listLevel = 1;  // какой уровень показывает экран списка (1 или 2)
 function renderList(){
-  // показываем уровни 1–2; сортировка: сначала обязательные, потом дополнительные
-  const items = DATA.filter(d => d.level < 3)
-                    .map((d, idx) => d)  // d.id == позиция в DATA
-                    .sort((a, b) => a.level - b.level || a.id - b.id);
-  let html = "";
-  let curLevel = 0;
+  const items = DATA.filter(d => d.level === listLevel);
+  const ttl = listLevel === 1 ? "Уровень 1 — обязательные" : "Уровень 2 — дополнительные";
+  let html = '<div class="lvhead">' + ttl + ' · ' + items.length + '</div>';
   items.forEach((d) => {
     const i = d.id;
-    if(d.level !== curLevel){
-      curLevel = d.level;
-      const cnt = items.filter(x => x.level === curLevel).length;
-      const ttl = curLevel === 1 ? "Уровень 1 — обязательные" : "Уровень 2 — дополнительные";
-      html += '<div class="lvhead">' + ttl + ' · ' + cnt + '</div>';
-    }
     const forms = d.variants && d.variants.length ? ' <span class="rvar">' + d.variants.join(" ") + '</span>' : '';
     html += '<div class="row">' +
       '<div class="rg">' + d.main + '</div>' +
@@ -698,24 +691,28 @@ document.getElementById("addAll").onclick = () => {
   save(); buildQueue(); renderExtra(); refreshStats();
 };
 
-// --- Переключение вкладок ---
+// --- Переключение вкладок (Тренировка / Уровень 1 / Уровень 2 / Справочные) ---
 const trainScreen = document.getElementById("trainScreen");
 const tabTrain = document.getElementById("tabTrain");
-const tabList = document.getElementById("tabList");
+const tabL1 = document.getElementById("tabL1");
+const tabL2 = document.getElementById("tabL2");
 const tabExtra = document.getElementById("tabExtra");
 function setTab(name){
   tabTrain.classList.toggle("on", name === "train");
-  tabList.classList.toggle("on", name === "list");
+  tabL1.classList.toggle("on", name === "l1");
+  tabL2.classList.toggle("on", name === "l2");
   tabExtra.classList.toggle("on", name === "extra");
+  const isList = name === "l1" || name === "l2";
   trainScreen.style.display = name === "train" ? "block" : "none";
-  listScreen.style.display = name === "list" ? "block" : "none";
+  listScreen.style.display = isList ? "block" : "none";
   extraScreen.style.display = name === "extra" ? "block" : "none";
-  if(name === "list") renderList();
+  if(isList){ listLevel = name === "l1" ? 1 : 2; renderList(); }
   else if(name === "extra") renderExtra();
   else { buildQueue(); show(); }
 }
 tabTrain.onclick = () => setTab("train");
-tabList.onclick = () => setTab("list");
+tabL1.onclick = () => setTab("l1");
+tabL2.onclick = () => setTab("l2");
 tabExtra.onclick = () => setTab("extra");
 
 buildQueue();
