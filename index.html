@@ -52,7 +52,15 @@
   .card.flip .back{display:block}
   .py{font-size:26px;color:var(--accent);margin-bottom:4px}
   .mean{font-size:21px;margin-bottom:10px}
-  .vars{font-size:15px;color:var(--dim);margin-bottom:10px}
+  .vars{margin-bottom:10px}
+  .vars .vcap{font-size:13px;color:var(--dim)}
+  .vars .vglyphs{font-size:30px;color:var(--ink);vertical-align:middle;margin-left:6px;letter-spacing:6px}
+  .leveltag{position:absolute;top:12px;left:14px;font-size:11px;font-weight:700;
+    padding:3px 9px;border-radius:8px;display:none}
+  .leveltag.show{display:block}
+  .leveltag.l1{background:var(--accent);color:#0f1115}
+  .leveltag.l2{background:var(--card2);color:var(--dim);border:1px solid var(--line)}
+  .leveltag.l3{background:var(--line);color:var(--dim)}
   .mn{font-size:14px;color:var(--dim);line-height:1.4;margin-bottom:12px;max-width:300px}
   .ex{font-size:15px;color:var(--dim)}
   .ex b{color:var(--ink);font-size:30px;vertical-align:middle;margin-right:6px}
@@ -85,6 +93,7 @@
   .b-new{background:var(--new)} .b-learn{background:var(--no)} .b-done{background:var(--ok)}
   .b-l1{background:var(--accent)} .b-l2{background:var(--card2);color:var(--dim)}
   .rvar{color:var(--accent);font-size:13px;margin-left:4px}
+  .lvhead{font-size:14px;font-weight:700;color:var(--ink);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
   .ract{display:flex;flex-direction:column;gap:5px;flex:none}
   .ract button{border:1px solid var(--line);background:var(--card2);color:var(--ink);
     border-radius:8px;padding:6px 9px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
@@ -126,6 +135,7 @@
 
   <div id="card" class="card">
     <div class="cardtag" id="cardtag"></div>
+    <div class="leveltag" id="leveltag"></div>
     <div class="front">
       <div class="glyph" id="glyph">人</div>
       <div class="hint">нажми, чтобы проверить</div>
@@ -465,10 +475,17 @@ function renderCard(i){
   document.getElementById("bglyph").textContent = d.main;
   document.getElementById("py").textContent = d.py;
   document.getElementById("mean").textContent = d.mean;
+  // метка уровня
+  const lt = document.getElementById("leveltag");
+  const lvName = {1: "Ур.1 · база", 2: "Ур.2 · доп.", 3: "Ур.3 · справ."}[d.level];
+  lt.className = "leveltag show l" + d.level;
+  lt.textContent = lvName;
   // дополнительные формы ключа (боковые/упрощённые) — в той же карточке
   const varEl = document.getElementById("vars");
-  if(d.variants && d.variants.length){ varEl.textContent = "формы: " + d.variants.join("   "); varEl.classList.remove("hidden"); }
-  else { varEl.textContent = ""; varEl.classList.add("hidden"); }
+  if(d.variants && d.variants.length){
+    varEl.innerHTML = '<span class="vcap">формы:</span><span class="vglyphs">' + d.variants.join(" ") + '</span>';
+    varEl.classList.remove("hidden");
+  } else { varEl.innerHTML = ""; varEl.classList.add("hidden"); }
   // мнемоника и пример есть только у основных ключей; у справочных карточка облегчённая
   const mnEl = document.getElementById("mn");
   const exEl = document.getElementById("ex");
@@ -613,8 +630,15 @@ function renderList(){
                     .map((d, idx) => d)  // d.id == позиция в DATA
                     .sort((a, b) => a.level - b.level || a.id - b.id);
   let html = "";
+  let curLevel = 0;
   items.forEach((d) => {
     const i = d.id;
+    if(d.level !== curLevel){
+      curLevel = d.level;
+      const cnt = items.filter(x => x.level === curLevel).length;
+      const ttl = curLevel === 1 ? "Уровень 1 — обязательные" : "Уровень 2 — дополнительные";
+      html += '<div class="lvhead">' + ttl + ' · ' + cnt + '</div>';
+    }
     const forms = d.variants && d.variants.length ? ' <span class="rvar">' + d.variants.join(" ") + '</span>' : '';
     html += '<div class="row">' +
       '<div class="rg">' + d.main + '</div>' +
