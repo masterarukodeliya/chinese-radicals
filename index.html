@@ -12,9 +12,15 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ключи">
 <style>
+  @font-face{
+    font-family:'WenKai';
+    src:url('fonts/wenkai-subset.woff2') format('woff2');
+    font-display:swap;
+  }
   :root{
     --bg:#0f1115; --card:#1a1e26; --card2:#232936; --line:#2c3442;
     --ink:#e8ecf2; --dim:#8b95a7; --accent:#e0533d; --ok:#3ecf8e; --no:#e0a23d; --new:#5b8def;
+    --hanzi:'WenKai','Noto Serif SC','Songti SC','SimSun',serif;
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
@@ -45,7 +51,7 @@
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     padding:22px;text-align:center;user-select:none;transition:background .15s}
   .card:active{background:var(--card2)}
-  .glyph{font-size:104px;line-height:1;margin:2px 0 10px}
+  .glyph{font-size:104px;line-height:1;margin:2px 0 10px;font-family:var(--hanzi)}
   .hint{color:var(--dim);font-size:13px}
   .back{display:none}
   .card.flip .front{display:none}
@@ -54,7 +60,7 @@
   .mean{font-size:21px;margin-bottom:10px}
   .vars{margin-bottom:10px}
   .vars .vcap{font-size:13px;color:var(--dim)}
-  .vars .vglyphs{font-size:30px;color:var(--ink);vertical-align:middle;margin-left:6px;letter-spacing:6px}
+  .vars .vglyphs{font-size:30px;color:var(--ink);vertical-align:middle;margin-left:6px;letter-spacing:6px;font-family:var(--hanzi)}
   .leveltag{position:absolute;top:12px;left:14px;font-size:11px;font-weight:700;
     padding:3px 9px;border-radius:8px;display:none}
   .leveltag.show{display:block}
@@ -63,7 +69,7 @@
   .leveltag.l3{background:var(--line);color:var(--dim)}
   .mn{font-size:14px;color:var(--dim);line-height:1.4;margin-bottom:12px;max-width:300px}
   .ex{font-size:15px;color:var(--dim)}
-  .ex b{color:var(--ink);font-size:30px;vertical-align:middle;margin-right:6px}
+  .ex b{color:var(--ink);font-size:30px;vertical-align:middle;margin-right:6px;font-family:var(--hanzi)}
   .speak{margin-top:14px;background:var(--card2);color:var(--ink);border:1px solid var(--line);
     border-radius:12px;padding:9px 18px;font-size:15px;font-weight:600;cursor:pointer}
   .speak:active{background:var(--line)}
@@ -84,7 +90,7 @@
   /* --- Список --- */
   #listScreen{width:100%;max-width:440px;display:none}
   .row{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line)}
-  .rg{font-size:28px;width:54px;text-align:center;flex:none}
+  .rg{font-size:28px;width:54px;text-align:center;flex:none;font-family:var(--hanzi)}
   .rinfo{flex:1;min-width:0}
   .rtop{font-size:15px}
   .rtop .rpy{color:var(--accent);margin-right:6px}
