@@ -100,6 +100,14 @@
   .b-l1{background:var(--accent)} .b-l2{background:var(--card2);color:var(--dim)}
   .rvar{color:var(--accent);font-size:13px;margin-left:4px}
   .lvhead{font-size:14px;font-weight:700;color:var(--ink);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+  .shufbtn{border:1px solid var(--line);background:var(--card2);color:var(--dim);
+    border-radius:8px;padding:5px 10px;font-size:13px;font-weight:600;cursor:pointer}
+  .shufbtn.on{border-color:var(--accent);color:var(--accent)}
+  .sortbar{display:none;align-items:center;flex-wrap:wrap;gap:6px;width:100%;max-width:440px;
+    margin-bottom:10px;font-size:13px;color:var(--dim)}
+  .sortbar button{border:1px solid var(--line);background:var(--card2);color:var(--dim);
+    border-radius:8px;padding:5px 10px;font-size:13px;font-weight:600;cursor:pointer}
+  .sortbar button.on{border-color:var(--accent);color:var(--accent)}
   .ract{display:flex;flex-direction:column;gap:5px;flex:none}
   .ract button{border:1px solid var(--line);background:var(--card2);color:var(--ink);
     border-radius:8px;padding:6px 9px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
@@ -138,6 +146,7 @@
     Новых за сессию:
     <input type="number" id="perday" min="1" max="100" step="1">
     <label class="chk"><input type="checkbox" id="revchk" checked> повторы</label>
+    <button class="shufbtn" id="shuffleBtn">🔀 перемешать</button>
   </div>
 
   <div id="card" class="card">
@@ -176,6 +185,12 @@
 </div>
 
 <!-- ЭКРАН СПИСКА -->
+<div id="listSort" class="sortbar">
+  <span>Сортировка:</span>
+  <button data-sort="kn" class="on">Канси №</button>
+  <button data-sort="py">Пиньинь</button>
+  <button data-sort="status">Статус</button>
+</div>
 <div id="listScreen"></div>
 
 <!-- ЭКРАН АРХАИЧНЫХ КЛЮЧЕЙ -->
@@ -413,7 +428,20 @@ const today = () => Math.floor(Date.now() / DAY);
 let prog = JSON.parse(localStorage.getItem(KEY) || "{}");
 let newPerDay = parseInt(localStorage.getItem(PKEY) || "10", 10);
 let includeReviews = localStorage.getItem("radicals_reviews") !== "0";
+let listSort = localStorage.getItem("radicals_listsort") || "kn";
+let shuffleOn = localStorage.getItem("radicals_shuffle") === "1";
 function save(){ localStorage.setItem(KEY, JSON.stringify(prog)); }
+function statusRank(id){
+  if(!seen(id)) return 0;                      // новый
+  return (prog[id].box || 0) >= 4 ? 2 : 1;     // освоен : учится
+}
+function shuffleArr(a){
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 // счётчик новых за ТЕКУЩУЮ сессию (не сохраняется — обнуляется при каждом заходе)
 let sessionNew = 0;
@@ -441,6 +469,8 @@ function buildQueue(){
   fresh.sort((a, b) => DATA[a].level - DATA[b].level || DATA[a].kn - DATA[b].kn);
   const allowed = Math.max(0, newPerDay - sessionNew);
   const newItems = forced.concat(fresh.slice(0, allowed));
+  // «перемешать» — случайный порядок подачи (набор остаётся тот же, по уровням)
+  if(shuffleOn){ shuffleArr(newItems); shuffleArr(reviews); }
   // сначала новые (ощущение продвижения), затем повторы; повторы можно отключить
   queue = includeReviews ? newItems.concat(reviews) : newItems;
 }
@@ -609,6 +639,28 @@ revChk.onchange = () => {
   buildQueue(); show();
 };
 
+// кнопка «перемешать» — случайный порядок подачи новых карточек
+const shuffleBtn = document.getElementById("shuffleBtn");
+shuffleBtn.classList.toggle("on", shuffleOn);
+shuffleBtn.onclick = () => {
+  shuffleOn = !shuffleOn;
+  localStorage.setItem("radicals_shuffle", shuffleOn ? "1" : "0");
+  shuffleBtn.classList.toggle("on", shuffleOn);
+  buildQueue(); show();
+};
+
+// переключатель сортировки списков уровней
+const listSortEl = document.getElementById("listSort");
+listSortEl.querySelectorAll("button").forEach(b => {
+  b.classList.toggle("on", b.getAttribute("data-sort") === listSort);
+  b.onclick = () => {
+    listSort = b.getAttribute("data-sort");
+    localStorage.setItem("radicals_listsort", listSort);
+    listSortEl.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+    renderList();
+  };
+});
+
 // --- Экран «Все ключи» ---
 const listScreen = document.getElementById("listScreen");
 function statusBadge(i){
@@ -633,7 +685,11 @@ function levelBadge(lvl){
 }
 let listLevel = 1;  // какой уровень показывает экран списка (1 или 2)
 function renderList(){
-  const items = DATA.filter(d => d.level === listLevel).sort((a, b) => a.kn - b.kn);
+  const items = DATA.filter(d => d.level === listLevel).sort((a, b) => {
+    if(listSort === "py") return a.py.localeCompare(b.py, "en") || a.kn - b.kn;
+    if(listSort === "status") return statusRank(a.id) - statusRank(b.id) || a.kn - b.kn;
+    return a.kn - b.kn;
+  });
   const ttl = listLevel === 1 ? "Уровень 1 — обязательные" : "Уровень 2 — дополнительные";
   let html = '<div class="lvhead">' + ttl + ' · ' + items.length + '</div>';
   items.forEach((d) => {
@@ -711,6 +767,7 @@ function setTab(name){
   const isList = name === "l1" || name === "l2";
   trainScreen.style.display = name === "train" ? "block" : "none";
   listScreen.style.display = isList ? "block" : "none";
+  document.getElementById("listSort").style.display = isList ? "flex" : "none";
   extraScreen.style.display = name === "extra" ? "block" : "none";
   if(isList){ listLevel = name === "l1" ? 1 : 2; renderList(); }
   else if(name === "extra") renderExtra();
