@@ -105,9 +105,11 @@
   .shufbtn.on{border-color:var(--accent);color:var(--accent)}
   .sortbar{display:none;align-items:center;flex-wrap:wrap;gap:6px;width:100%;max-width:440px;
     margin-bottom:10px;font-size:13px;color:var(--dim)}
-  .sortbar button{border:1px solid var(--line);background:var(--card2);color:var(--dim);
+  .tsortbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px;width:100%;max-width:360px;
+    margin:0 0 14px;font-size:13px;color:var(--dim)}
+  .sortbar button,.tsortbar button{border:1px solid var(--line);background:var(--card2);color:var(--dim);
     border-radius:8px;padding:5px 10px;font-size:13px;font-weight:600;cursor:pointer}
-  .sortbar button.on{border-color:var(--accent);color:var(--accent)}
+  .sortbar button.on,.tsortbar button.on{border-color:var(--accent);color:var(--accent)}
   .ract{display:flex;flex-direction:column;gap:5px;flex:none}
   .ract button{border:1px solid var(--line);background:var(--card2);color:var(--ink);
     border-radius:8px;padding:6px 9px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
@@ -146,7 +148,13 @@
     Новых за сессию:
     <input type="number" id="perday" min="1" max="100" step="1">
     <label class="chk"><input type="checkbox" id="revchk" checked> повторы</label>
-    <button class="shufbtn" id="shuffleBtn">🔀 перемешать</button>
+  </div>
+  <div id="trainSort" class="tsortbar">
+    <span>Порядок:</span>
+    <button data-tsort="kn" class="on">Канси №</button>
+    <button data-tsort="py">Пиньинь</button>
+    <button data-tsort="status">Статус</button>
+    <button data-tsort="shuffle">🔀 Случайно</button>
   </div>
 
   <div id="card" class="card">
@@ -429,11 +437,18 @@ let prog = JSON.parse(localStorage.getItem(KEY) || "{}");
 let newPerDay = parseInt(localStorage.getItem(PKEY) || "10", 10);
 let includeReviews = localStorage.getItem("radicals_reviews") !== "0";
 let listSort = localStorage.getItem("radicals_listsort") || "kn";
-let shuffleOn = localStorage.getItem("radicals_shuffle") === "1";
+let trainSort = localStorage.getItem("radicals_trainsort") || "kn";
 function save(){ localStorage.setItem(KEY, JSON.stringify(prog)); }
 function statusRank(id){
   if(!seen(id)) return 0;                      // новый
   return (prog[id].box || 0) >= 4 ? 2 : 1;     // освоен : учится
+}
+// сравнение по выбранному порядку (kn / py / status); id-аргументы
+function cmpBy(sort, a, b){
+  const A = DATA[a], B = DATA[b];
+  if(sort === "py") return A.py.localeCompare(B.py, "en") || A.kn - B.kn;
+  if(sort === "status") return statusRank(a) - statusRank(b) || A.kn - B.kn;
+  return A.kn - B.kn;
 }
 function shuffleArr(a){
   for(let i = a.length - 1; i > 0; i--){
@@ -465,12 +480,19 @@ function buildQueue(){
       fresh.push(i);                                      // новый, не отложенный
     }
   });
-  // новые: сначала по уровню (1 раньше 2), внутри уровня — по номеру таблицы Канси
-  fresh.sort((a, b) => DATA[a].level - DATA[b].level || DATA[a].kn - DATA[b].kn);
+  // порядок подачи новых: сначала по уровню (1 раньше 2), внутри уровня — по выбранному
+  // порядку (Канси № / пиньинь / статус), либо случайно при «Случайно»
+  if(trainSort === "shuffle"){
+    const r = {}; fresh.forEach(i => r[i] = Math.random());
+    fresh.sort((a, b) => DATA[a].level - DATA[b].level || r[a] - r[b]);
+  } else {
+    fresh.sort((a, b) => DATA[a].level - DATA[b].level || cmpBy(trainSort, a, b));
+  }
   const allowed = Math.max(0, newPerDay - sessionNew);
   const newItems = forced.concat(fresh.slice(0, allowed));
-  // «перемешать» — случайный порядок подачи (набор остаётся тот же, по уровням)
-  if(shuffleOn){ shuffleArr(newItems); shuffleArr(reviews); }
+  // повторы — в том же порядке (или случайно)
+  if(trainSort === "shuffle") shuffleArr(reviews);
+  else reviews.sort((a, b) => cmpBy(trainSort, a, b));
   // сначала новые (ощущение продвижения), затем повторы; повторы можно отключить
   queue = includeReviews ? newItems.concat(reviews) : newItems;
 }
@@ -639,15 +661,17 @@ revChk.onchange = () => {
   buildQueue(); show();
 };
 
-// кнопка «перемешать» — случайный порядок подачи новых карточек
-const shuffleBtn = document.getElementById("shuffleBtn");
-shuffleBtn.classList.toggle("on", shuffleOn);
-shuffleBtn.onclick = () => {
-  shuffleOn = !shuffleOn;
-  localStorage.setItem("radicals_shuffle", shuffleOn ? "1" : "0");
-  shuffleBtn.classList.toggle("on", shuffleOn);
-  buildQueue(); show();
-};
+// переключатель порядка в тренировке (Канси № / пиньинь / статус / случайно)
+const trainSortEl = document.getElementById("trainSort");
+trainSortEl.querySelectorAll("button").forEach(b => {
+  b.classList.toggle("on", b.getAttribute("data-tsort") === trainSort);
+  b.onclick = () => {
+    trainSort = b.getAttribute("data-tsort");
+    localStorage.setItem("radicals_trainsort", trainSort);
+    trainSortEl.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+    buildQueue(); show();
+  };
+});
 
 // переключатель сортировки списков уровней
 const listSortEl = document.getElementById("listSort");
