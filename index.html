@@ -147,6 +147,20 @@
   .drilldone-btns{display:flex;gap:10px;justify-content:center;margin-top:14px}
   .drilldone-btns button{border:1px solid var(--line);background:var(--card2);color:var(--ink);
     border-radius:10px;padding:9px 16px;font-size:14px;font-weight:600;cursor:pointer}
+  /* --- Окно выбора подборки --- */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;
+    justify-content:center;padding:20px;z-index:50}
+  .modal-box{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:18px;width:100%;max-width:340px;max-height:80vh;overflow:auto}
+  .modal-title{font-size:16px;font-weight:700;margin-bottom:12px}
+  .pick-item{display:block;width:100%;text-align:left;border:1px solid var(--line);
+    background:var(--card2);color:var(--ink);border-radius:10px;padding:11px 14px;margin-bottom:8px;
+    font-size:15px;font-weight:600;cursor:pointer}
+  .pick-item .pi-count{color:var(--dim);font-weight:400;font-size:13px;float:right}
+  .pick-new{display:block;width:100%;border:1px solid var(--ok);color:var(--ok);background:none;
+    border-radius:10px;padding:11px;margin:4px 0 8px;font-size:14px;font-weight:600;cursor:pointer}
+  .pick-cancel{display:block;width:100%;border:1px solid var(--line);color:var(--dim);background:none;
+    border-radius:10px;padding:9px;font-size:13px;font-weight:600;cursor:pointer}
   .hidden{display:none!important}
 </style>
 </head>
@@ -244,6 +258,16 @@
   <button id="selClear">Снять</button>
 </div>
 <div id="listScreen"></div>
+
+<!-- ОКНО ВЫБОРА ПОДБОРКИ -->
+<div id="pickModal" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-title">Добавить в подборку</div>
+    <div id="pickList"></div>
+    <button id="pickNew" class="pick-new">➕ Новая подборка</button>
+    <button id="pickCancel" class="pick-cancel">Отмена</button>
+  </div>
+</div>
 
 <!-- ЭКРАН ПОДБОРОК -->
 <div id="groupsScreen">
@@ -856,23 +880,48 @@ document.getElementById("selClear").onclick = () => {
   selection.clear(); updateSelBar();
   document.querySelectorAll(".selchk").forEach(c => c.checked = false);
 };
-document.getElementById("selAdd").onclick = () => {
+function addSelectionToGroup(g){
+  const n = selection.size;
+  selection.forEach(id => { if(!g.ids.includes(id)) g.ids.push(id); });
+  saveGroups();
+  selection.clear(); updateSelBar();
+  document.querySelectorAll(".selchk").forEach(c => c.checked = false);
+  closePick();
+  alert("Добавлено " + n + " в подборку «" + g.name + "». Открой вкладку «Подборки».");
+}
+const pickModal = document.getElementById("pickModal");
+const pickList = document.getElementById("pickList");
+function openPick(){
   if(selection.size === 0) return;
-  const names = groups.map(g => g.name);
-  let name = prompt("В какую подборку добавить? Впиши название — новое создаст подборку." +
-    (names.length ? "\nУже есть: " + names.join(", ") : ""), "");
+  let html = "";
+  if(groups.length === 0){
+    html = '<p style="color:var(--dim);font-size:13px;margin:0 0 10px">Подборок пока нет — создай новую.</p>';
+  } else {
+    groups.forEach((g, gi) => {
+      html += '<button class="pick-item" data-pick="' + gi + '">' + escapeHtml(g.name) +
+        '<span class="pi-count">' + g.ids.length + ' кл.</span></button>';
+    });
+  }
+  pickList.innerHTML = html;
+  pickModal.classList.remove("hidden");
+}
+function closePick(){ pickModal.classList.add("hidden"); }
+document.getElementById("selAdd").onclick = openPick;
+pickList.addEventListener("click", (e) => {
+  const p = e.target.closest("[data-pick]");
+  if(p) addSelectionToGroup(groups[+p.getAttribute("data-pick")]);
+});
+document.getElementById("pickNew").onclick = () => {
+  let name = prompt("Название новой подборки:", "");
   if(name === null) return;
   name = name.trim();
   if(!name) return;
   let g = groups.find(x => x.name === name);
   if(!g){ g = { name: name, ids: [] }; groups.push(g); }
-  selection.forEach(id => { if(!g.ids.includes(id)) g.ids.push(id); });
-  saveGroups();
-  const n = selection.size;
-  selection.clear(); updateSelBar();
-  document.querySelectorAll(".selchk").forEach(c => c.checked = false);
-  alert("Добавлено " + n + " в подборку «" + name + "». Открой вкладку «Подборки».");
+  addSelectionToGroup(g);
 };
+document.getElementById("pickCancel").onclick = closePick;
+pickModal.addEventListener("click", (e) => { if(e.target === pickModal) closePick(); });
 
 // --- Экран «Подборки» ---
 const groupsScreen = document.getElementById("groupsScreen");
