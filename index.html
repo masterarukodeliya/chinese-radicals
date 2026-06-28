@@ -123,6 +123,30 @@
     border-radius:10px;padding:9px;font-size:13px;font-weight:600;cursor:pointer}
   .rkx{font-size:11px;color:var(--dim)}
   .ract .added{border-color:var(--dim);color:var(--dim)}
+  /* --- Подборки --- */
+  .selchk{width:20px;height:20px;flex:none;accent-color:var(--accent);cursor:pointer}
+  .selbar{display:flex;align-items:center;gap:10px;width:100%;max-width:440px;margin-bottom:10px;
+    padding:8px 12px;background:var(--card2);border:1px solid var(--accent);border-radius:10px;
+    font-size:13px;color:var(--ink)}
+  .selbar button{margin-left:auto;border:1px solid var(--accent);background:none;color:var(--accent);
+    border-radius:8px;padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer}
+  .selbar #selClear{margin-left:0;border-color:var(--line);color:var(--dim)}
+  #groupsScreen{width:100%;max-width:440px;display:none}
+  .groups-head{color:var(--dim);font-size:13px;margin:0 0 14px;line-height:1.45}
+  .grow{display:flex;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--line)}
+  .gname{flex:1;min-width:0;font-size:15px;font-weight:600}
+  .gname .gcount{color:var(--dim);font-weight:400;font-size:13px;margin-left:6px}
+  .grow .gtrain{border:1px solid var(--ok);color:var(--ok);background:none;border-radius:8px;
+    padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;flex:none}
+  .gicon{border:1px solid var(--line);background:none;color:var(--dim);border-radius:8px;
+    padding:7px 9px;font-size:13px;cursor:pointer;flex:none}
+  .drillbar{display:flex;align-items:center;gap:10px;width:100%;max-width:360px;margin-bottom:14px;
+    padding:8px 12px;background:var(--card2);border:1px solid var(--line);border-radius:10px;font-size:13px}
+  .drillbar button{margin-left:auto;border:1px solid var(--line);background:none;color:var(--dim);
+    border-radius:8px;padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer}
+  .drilldone-btns{display:flex;gap:10px;justify-content:center;margin-top:14px}
+  .drilldone-btns button{border:1px solid var(--line);background:var(--card2);color:var(--ink);
+    border-radius:10px;padding:9px 16px;font-size:14px;font-weight:600;cursor:pointer}
   .hidden{display:none!important}
 </style>
 </head>
@@ -135,26 +159,33 @@
   <button class="tab" id="tabL1">Уровень 1</button>
   <button class="tab" id="tabL2">Уровень 2</button>
   <button class="tab" id="tabExtra">Архаика</button>
+  <button class="tab" id="tabGroups">📂 Подборки</button>
 </div>
 
 <!-- ЭКРАН ТРЕНИРОВКИ -->
 <div id="trainScreen">
-  <div class="bar">
-    <span>В очереди: <b id="due">0</b></span>
-    <span>Изучается: <b id="learning">0</b></span>
-    <span>Освоено: <b id="learned">0</b>/<b id="total">0</b></span>
+  <div id="srsControls">
+    <div class="bar">
+      <span>В очереди: <b id="due">0</b></span>
+      <span>Изучается: <b id="learning">0</b></span>
+      <span>Освоено: <b id="learned">0</b>/<b id="total">0</b></span>
+    </div>
+    <div class="setting">
+      Новых за сессию:
+      <input type="number" id="perday" min="1" max="100" step="1">
+      <label class="chk"><input type="checkbox" id="revchk" checked> повторы</label>
+    </div>
+    <div id="trainSort" class="tsortbar">
+      <span>Порядок:</span>
+      <button data-tsort="kn" class="on">Канси №</button>
+      <button data-tsort="py">Пиньинь</button>
+      <button data-tsort="status">Статус</button>
+      <button data-tsort="shuffle">🔀 Случайно</button>
+    </div>
   </div>
-  <div class="setting">
-    Новых за сессию:
-    <input type="number" id="perday" min="1" max="100" step="1">
-    <label class="chk"><input type="checkbox" id="revchk" checked> повторы</label>
-  </div>
-  <div id="trainSort" class="tsortbar">
-    <span>Порядок:</span>
-    <button data-tsort="kn" class="on">Канси №</button>
-    <button data-tsort="py">Пиньинь</button>
-    <button data-tsort="status">Статус</button>
-    <button data-tsort="shuffle">🔀 Случайно</button>
+  <div id="drillBar" class="drillbar hidden">
+    <span id="drillInfo"></span>
+    <button id="drillExit">Выйти</button>
   </div>
 
   <div id="card" class="card">
@@ -189,6 +220,14 @@
     <p><b>Сессия пройдена.</b><br>Лимит новых на эту сессию исчерпан. Перезайди (обнови страницу), чтобы начать новую сессию с новой порцией ключей, либо подними лимит выше.</p>
   </div>
 
+  <div id="drillDone" class="done hidden">
+    <p><b>Подборка пройдена.</b></p>
+    <div class="drilldone-btns">
+      <button id="drillRestart">Пройти заново</button>
+      <button id="drillBack">К подборкам</button>
+    </div>
+  </div>
+
   <button class="reset" id="reset">Сбросить весь прогресс</button>
 </div>
 
@@ -199,7 +238,18 @@
   <button data-sort="py">Пиньинь</button>
   <button data-sort="status">Статус</button>
 </div>
+<div id="selBar" class="selbar hidden">
+  <span>Выбрано: <b id="selCount">0</b></span>
+  <button id="selAdd">В подборку</button>
+  <button id="selClear">Снять</button>
+</div>
 <div id="listScreen"></div>
+
+<!-- ЭКРАН ПОДБОРОК -->
+<div id="groupsScreen">
+  <p class="groups-head">Свои наборы ключей для отдельной тренировки. Отметь ключи галочками в «Уровень 1/2» или «Архаика» и добавь в подборку.</p>
+  <div id="groupsList"></div>
+</div>
 
 <!-- ЭКРАН АРХАИЧНЫХ КЛЮЧЕЙ -->
 <div id="extraScreen">
@@ -438,6 +488,12 @@ let newPerDay = parseInt(localStorage.getItem(PKEY) || "10", 10);
 let includeReviews = localStorage.getItem("radicals_reviews") !== "0";
 let listSort = localStorage.getItem("radicals_listsort") || "kn";
 let trainSort = localStorage.getItem("radicals_trainsort") || "kn";
+// --- Подборки (свои группы ключей) ---
+let groups = [];
+try { groups = JSON.parse(localStorage.getItem("radicals_groups") || "[]"); } catch { groups = []; }
+function saveGroups(){ localStorage.setItem("radicals_groups", JSON.stringify(groups)); }
+let selection = new Set();   // отмеченные галочками id в списках
+let drill = null;            // активный дрилл: {ids, queue, total, name}
 function save(){ localStorage.setItem(KEY, JSON.stringify(prog)); }
 function statusRank(id){
   if(!seen(id)) return 0;                      // новый
@@ -525,9 +581,10 @@ function renderCard(i){
   card.classList.remove("flip");
   btns.classList.add("hidden");
   const reviewing = histPos < history.length - 1;
-  // метка: просмотр истории / повтор / новый ключ
+  // метка: дрилл подборки / просмотр истории / повтор / новый ключ
   const tag = document.getElementById("cardtag");
-  if(reviewing){ tag.className = "cardtag show old"; tag.textContent = "Просмотр"; }
+  if(drill){ tag.className = "cardtag show rep"; tag.textContent = "📂 Подборка"; }
+  else if(reviewing){ tag.className = "cardtag show old"; tag.textContent = "Просмотр"; }
   else if(seen(i)){ tag.className = "cardtag show rep"; tag.textContent = "↻ Повтор"; }
   else { tag.className = "cardtag show new"; tag.textContent = "Новый"; }
   document.getElementById("glyph").textContent = d.main;
@@ -634,8 +691,8 @@ function answer(known){
   if(!known) queue.push(cur);
   show();
 }
-document.getElementById("bok").onclick = () => answer(true);
-document.getElementById("bno").onclick = () => answer(false);
+document.getElementById("bok").onclick = () => drill ? drillAnswer(true) : answer(true);
+document.getElementById("bno").onclick = () => drill ? drillAnswer(false) : answer(false);
 
 document.getElementById("reset").onclick = () => {
   if(confirm("Сбросить весь прогресс?")){ prog = {}; save(); buildQueue(); show(); renderList(); renderExtra(); }
@@ -720,6 +777,7 @@ function renderList(){
     const i = d.id;
     const forms = d.variants && d.variants.length ? ' <span class="rvar">' + d.variants.join(" ") + '</span>' : '';
     html += '<div class="row">' +
+      '<input type="checkbox" class="selchk" data-sel="' + i + '"' + (selection.has(i) ? ' checked' : '') + '>' +
       '<div class="rg">' + d.main + '</div>' +
       '<div class="rinfo">' +
         '<div class="rtop"><span class="rpy">' + d.py + '</span>' + d.mean + forms + ' ' + levelBadge(d.level) + ' ' + statusBadge(i) + '</div>' +
@@ -733,6 +791,14 @@ function renderList(){
   });
   listScreen.innerHTML = html;
 }
+function onSelChange(e){
+  const s = e.target.getAttribute("data-sel");
+  if(s === null) return;
+  const i = +s;
+  if(e.target.checked) selection.add(i); else selection.delete(i);
+  updateSelBar();
+}
+listScreen.addEventListener("change", onSelChange);
 listScreen.addEventListener("click", (e) => {
   const l = e.target.getAttribute("data-learn");
   const dl = e.target.getAttribute("data-delay");
@@ -750,6 +816,7 @@ function renderExtra(){
     const i = d.id;
     const added = !!prog[i];
     html += '<div class="row">' +
+      '<input type="checkbox" class="selchk" data-sel="' + i + '"' + (selection.has(i) ? ' checked' : '') + '>' +
       '<div class="rg">' + d.main + '</div>' +
       '<div class="rinfo">' +
         '<div class="rtop"><span class="rpy">' + d.py + '</span>' + d.mean + '</div>' +
@@ -764,6 +831,7 @@ function renderExtra(){
   });
   extraListEl.innerHTML = html;
 }
+extraScreen.addEventListener("change", onSelChange);
 extraScreen.addEventListener("click", (e) => {
   const a = e.target.getAttribute("data-add");
   const r = e.target.getAttribute("data-remove");
@@ -777,30 +845,151 @@ document.getElementById("addAll").onclick = () => {
   save(); buildQueue(); renderExtra(); refreshStats();
 };
 
-// --- Переключение вкладок (Тренировка / Уровень 1 / Уровень 2 / Справочные) ---
+// --- Выбор ключей галочками + подборки ---
+function escapeHtml(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+const selBar = document.getElementById("selBar");
+function updateSelBar(){
+  document.getElementById("selCount").textContent = selection.size;
+  selBar.classList.toggle("hidden", selection.size === 0);
+}
+document.getElementById("selClear").onclick = () => {
+  selection.clear(); updateSelBar();
+  document.querySelectorAll(".selchk").forEach(c => c.checked = false);
+};
+document.getElementById("selAdd").onclick = () => {
+  if(selection.size === 0) return;
+  const names = groups.map(g => g.name);
+  let name = prompt("В какую подборку добавить? Впиши название — новое создаст подборку." +
+    (names.length ? "\nУже есть: " + names.join(", ") : ""), "");
+  if(name === null) return;
+  name = name.trim();
+  if(!name) return;
+  let g = groups.find(x => x.name === name);
+  if(!g){ g = { name: name, ids: [] }; groups.push(g); }
+  selection.forEach(id => { if(!g.ids.includes(id)) g.ids.push(id); });
+  saveGroups();
+  const n = selection.size;
+  selection.clear(); updateSelBar();
+  document.querySelectorAll(".selchk").forEach(c => c.checked = false);
+  alert("Добавлено " + n + " в подборку «" + name + "». Открой вкладку «Подборки».");
+};
+
+// --- Экран «Подборки» ---
+const groupsScreen = document.getElementById("groupsScreen");
+const groupsList = document.getElementById("groupsList");
+function renderGroups(){
+  if(groups.length === 0){
+    groupsList.innerHTML = '<p style="color:var(--dim);font-size:14px">Подборок пока нет.</p>';
+    return;
+  }
+  let html = "";
+  groups.forEach((g, gi) => {
+    html += '<div class="grow">' +
+      '<div class="gname">' + escapeHtml(g.name) + '<span class="gcount">' + g.ids.length + ' кл.</span></div>' +
+      '<button class="gtrain" data-train="' + gi + '">▶ Тренировать</button>' +
+      '<button class="gicon" data-clear="' + gi + '">Очистить</button>' +
+      '<button class="gicon" data-del="' + gi + '">✕</button>' +
+    '</div>';
+  });
+  groupsList.innerHTML = html;
+}
+groupsScreen.addEventListener("click", (e) => {
+  const tr = e.target.getAttribute("data-train");
+  const cl = e.target.getAttribute("data-clear");
+  const dl = e.target.getAttribute("data-del");
+  if(tr !== null){ startDrill(groups[+tr]); return; }
+  if(cl !== null){ if(confirm('Очистить подборку «' + groups[+cl].name + '»?')){ groups[+cl].ids = []; saveGroups(); renderGroups(); } }
+  if(dl !== null){ if(confirm('Удалить подборку «' + groups[+dl].name + '»?')){ groups.splice(+dl, 1); saveGroups(); renderGroups(); } }
+});
+
+// --- Фокус-дрилл по подборке (не трогает общий прогресс) ---
+const drillBar = document.getElementById("drillBar");
+const drillInfo = document.getElementById("drillInfo");
+const drillDone = document.getElementById("drillDone");
+const srsControls = document.getElementById("srsControls");
+const resetBtn = document.getElementById("reset");
+function startDrill(group){
+  if(!group || group.ids.length === 0){ alert("В подборке нет ключей. Отметь их галочками в списках."); return; }
+  drill = { name: group.name, ids: group.ids.slice(), queue: shuffleArr(group.ids.slice()), total: group.ids.length };
+  // показываем экран тренировки в режиме дрилла, без SRS-настроек
+  [tabTrain, tabL1, tabL2, tabExtra, tabGroups].forEach(t => t.classList.remove("on"));
+  trainScreen.style.display = "block";
+  listScreen.style.display = "none";
+  document.getElementById("listSort").style.display = "none";
+  selBar.classList.add("hidden");
+  extraScreen.style.display = "none";
+  groupsScreen.style.display = "none";
+  srsControls.classList.add("hidden");
+  resetBtn.classList.add("hidden");
+  drillBar.classList.remove("hidden");
+  doneEl.classList.add("hidden");
+  history = []; histPos = -1;
+  drillShow();
+}
+function drillShow(){
+  navbtns.classList.add("hidden");
+  drillDone.classList.add("hidden");
+  if(drill.queue.length === 0){
+    card.classList.add("hidden"); btns.classList.add("hidden");
+    drillInfo.textContent = "Подборка «" + drill.name + "»";
+    drillDone.classList.remove("hidden");
+    return;
+  }
+  card.classList.remove("hidden");
+  drillInfo.textContent = "Подборка «" + drill.name + "» · осталось " + drill.queue.length + " из " + drill.total;
+  history = []; histPos = -1;
+  renderCard(drill.queue[0]);
+}
+function drillAnswer(known){
+  if(known) drill.queue.shift();          // помню — убрать из круга
+  else drill.queue.push(drill.queue.shift()); // забыл — в конец круга
+  drillShow();
+}
+function leaveDrill(){
+  if(!drill) return;
+  drill = null;
+  drillBar.classList.add("hidden");
+  drillDone.classList.add("hidden");
+  srsControls.classList.remove("hidden");
+  resetBtn.classList.remove("hidden");
+}
+document.getElementById("drillExit").onclick = () => { leaveDrill(); setTab("groups"); };
+document.getElementById("drillBack").onclick = () => { leaveDrill(); setTab("groups"); };
+document.getElementById("drillRestart").onclick = () => {
+  drill.queue = shuffleArr(drill.ids.slice());
+  drillShow();
+};
+
+// --- Переключение вкладок ---
 const trainScreen = document.getElementById("trainScreen");
 const tabTrain = document.getElementById("tabTrain");
 const tabL1 = document.getElementById("tabL1");
 const tabL2 = document.getElementById("tabL2");
 const tabExtra = document.getElementById("tabExtra");
+const tabGroups = document.getElementById("tabGroups");
 function setTab(name){
   tabTrain.classList.toggle("on", name === "train");
   tabL1.classList.toggle("on", name === "l1");
   tabL2.classList.toggle("on", name === "l2");
   tabExtra.classList.toggle("on", name === "extra");
+  tabGroups.classList.toggle("on", name === "groups");
   const isList = name === "l1" || name === "l2";
   trainScreen.style.display = name === "train" ? "block" : "none";
   listScreen.style.display = isList ? "block" : "none";
   document.getElementById("listSort").style.display = isList ? "flex" : "none";
   extraScreen.style.display = name === "extra" ? "block" : "none";
-  if(isList){ listLevel = name === "l1" ? 1 : 2; renderList(); }
-  else if(name === "extra") renderExtra();
-  else { buildQueue(); show(); }
+  groupsScreen.style.display = name === "groups" ? "block" : "none";
+  if(isList){ listLevel = name === "l1" ? 1 : 2; renderList(); updateSelBar(); }
+  else if(name === "extra"){ renderExtra(); updateSelBar(); }
+  else { selBar.classList.add("hidden"); }
+  if(name === "groups") renderGroups();
+  if(name === "train"){ buildQueue(); show(); }
 }
-tabTrain.onclick = () => setTab("train");
-tabL1.onclick = () => setTab("l1");
-tabL2.onclick = () => setTab("l2");
-tabExtra.onclick = () => setTab("extra");
+tabTrain.onclick = () => { leaveDrill(); setTab("train"); };
+tabL1.onclick = () => { leaveDrill(); setTab("l1"); };
+tabL2.onclick = () => { leaveDrill(); setTab("l2"); };
+tabExtra.onclick = () => { leaveDrill(); setTab("extra"); };
+tabGroups.onclick = () => { leaveDrill(); setTab("groups"); };
 
 buildQueue();
 show();
