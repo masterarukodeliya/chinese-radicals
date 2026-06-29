@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Фразы 句</title>
+<meta name="theme-color" content="#0f1115">
+<style>
+  @font-face{
+    font-family:'WenKai';
+    src:url('fonts/wenkai-phrases.woff2?v=1') format('woff2');
+    font-display:swap;
+  }
+  :root{
+    --bg:#0f1115; --card:#1a1e26; --card2:#232936; --line:#2c3442;
+    --ink:#e8ecf2; --dim:#8b95a7; --accent:#e0533d; --ok:#3ecf8e; --no:#e0a23d; --new:#5b8def;
+    --hanzi:'WenKai','Noto Serif SC','Songti SC','SimSun',serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg);color:var(--ink);min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;padding:16px 14px 40px}
+  h1{font-size:18px;font-weight:600;margin:4px 0 2px}
+  .sub{color:var(--dim);font-size:13px;margin-bottom:14px;text-align:center}
+  .tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;justify-content:center}
+  .tab{padding:8px 16px;border-radius:10px;border:1px solid var(--line);background:none;
+    color:var(--dim);font-size:14px;font-weight:600;cursor:pointer}
+  .tab.on{background:var(--card2);color:var(--ink)}
+  .bar{display:flex;gap:14px;font-size:13px;color:var(--dim);margin-bottom:10px;flex-wrap:wrap;justify-content:center}
+  .bar b{color:var(--ink)}
+  .setting{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--dim);margin-bottom:10px;flex-wrap:wrap;justify-content:center}
+  .setting input[type=number]{width:60px;background:var(--card2);color:var(--ink);border:1px solid var(--line);
+    border-radius:8px;padding:5px 8px;font-size:14px;text-align:center}
+  .setting .chk{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  .setting .chk input{width:16px;height:16px;accent-color:var(--accent)}
+  .toggle{border:1px solid var(--line);background:var(--card2);color:var(--dim);
+    border-radius:8px;padding:5px 10px;font-size:13px;font-weight:600;cursor:pointer}
+  .toggle.on{border-color:var(--accent);color:var(--accent)}
+  .cardtag{position:absolute;top:12px;right:14px;font-size:12px;font-weight:700;
+    padding:3px 10px;border-radius:8px;color:#0f1115;display:none}
+  .cardtag.show{display:block}
+  .cardtag.rep{background:var(--no)} .cardtag.new{background:var(--new)}
+  .card{position:relative;width:100%;max-width:380px;min-height:320px;background:var(--card);
+    border:1px solid var(--line);border-radius:20px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:28px 22px;text-align:center;user-select:none}
+  .hz{font-size:46px;line-height:1.3;margin-bottom:14px;font-family:var(--hanzi)}
+  .py{font-size:21px;color:var(--accent);margin-bottom:10px}
+  .mean{font-size:20px;margin-bottom:8px}
+  .hint{color:var(--dim);font-size:13px;margin-top:6px}
+  .back{display:none}
+  .card.flip .front .hint{display:none}
+  .card.flip .back{display:block}
+  .speak{margin-top:12px;background:var(--card2);color:var(--ink);border:1px solid var(--line);
+    border-radius:12px;padding:9px 18px;font-size:15px;font-weight:600;cursor:pointer}
+  .speak:active{background:var(--line)}
+  .btns{display:flex;gap:12px;width:100%;max-width:380px;margin-top:16px}
+  .btns button{flex:1;padding:15px 0;border:none;border-radius:14px;font-size:15px;
+    font-weight:600;color:#0f1115;cursor:pointer}
+  .no{background:var(--no)} .ok{background:var(--ok)}
+  .btns.hidden{visibility:hidden}
+  .done{text-align:center;margin-top:40px;color:var(--dim);max-width:340px}
+  .done b{color:var(--ink)}
+  .reset{margin-top:24px;background:none;color:var(--dim);border:1px solid var(--line);
+    border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer}
+  #listScreen{width:100%;max-width:460px;display:none}
+  .row{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--line)}
+  .rinfo{flex:1;min-width:0}
+  .rhz{font-size:20px;font-family:var(--hanzi)}
+  .rpy{color:var(--accent);font-size:13px;margin-top:2px}
+  .rmean{font-size:14px;color:var(--ink);margin-top:2px}
+  .rspeak{border:1px solid var(--line);background:var(--card2);color:var(--ink);border-radius:8px;
+    padding:7px 11px;font-size:14px;cursor:pointer;flex:none}
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;color:#0f1115;margin-left:6px}
+  .b-new{background:var(--new)} .b-learn{background:var(--no)} .b-done{background:var(--ok)}
+  .empty{color:var(--dim);font-size:14px;text-align:center;margin-top:30px;max-width:340px}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<h1>Китайские фразы</h1>
+<div class="sub">фраза · пиньинь · перевод · озвучка · интервальное повторение</div>
+
+<div class="tabs">
+  <button class="tab on" id="tabTrain">Тренировка</button>
+  <button class="tab" id="tabList">Все фразы</button>
+</div>
+
+<div id="trainScreen">
+  <div class="bar">
+    <span>В очереди: <b id="due">0</b></span>
+    <span>Изучается: <b id="learning">0</b></span>
+    <span>Освоено: <b id="learned">0</b>/<b id="total">0</b></span>
+  </div>
+  <div class="setting">
+    Новых за сессию:
+    <input type="number" id="perday" min="1" max="50" step="1">
+    <label class="chk"><input type="checkbox" id="revchk" checked> повторы</label>
+    <button class="toggle" id="shuffleBtn">🔀 перемешать</button>
+    <button class="toggle" id="pyposBtn">пиньинь на обороте</button>
+  </div>
+
+  <div id="card" class="card">
+    <div class="cardtag" id="cardtag"></div>
+    <div class="front">
+      <div class="hz" id="fhz">一杯茶</div>
+      <div class="py" id="fpy"></div>
+      <button class="speak" id="fspeak" title="Послушать">🔊 Послушать</button>
+      <div class="hint">нажми, чтобы проверить</div>
+    </div>
+    <div class="back">
+      <div class="hz" id="bhz">一杯茶</div>
+      <div class="py" id="bpy"></div>
+      <div class="mean" id="bmean"></div>
+      <button class="speak" id="bspeak" title="Послушать">🔊 Послушать</button>
+    </div>
+  </div>
+
+  <div class="btns hidden" id="btns">
+    <button class="no" id="bno">Забыл</button>
+    <button class="ok" id="bok">Помню</button>
+  </div>
+
+  <div id="done" class="done hidden">
+    <p><b>Сессия пройдена.</b><br>Новые фразы на сегодня закончились. Обнови страницу для новой сессии или подними лимит.</p>
+  </div>
+
+  <button class="reset" id="reset">Сбросить весь прогресс</button>
+</div>
+
+<div id="listScreen"></div>
+
+<script>
+const DATA = [
+  {"id": 0, "hz": "一千块钱", "py": "yì qiān kuài qián", "mean": "тысяча юаней"},
+  {"id": 1, "hz": "一杯茶", "py": "yī bēi chá", "mean": "чашка чая"}
+];
+const byId = {}; DATA.forEach(d => byId[d.id] = d);
+
+const KEY = "phrases_progress_v1";
+const AUDIO_VER = "2026-06-29-1";
+const INTERVALS = [0, 1, 2, 4, 7, 15, 30];
+const DAY = 86400000;
+const today = () => Math.floor(Date.now() / DAY);
+
+let prog = JSON.parse(localStorage.getItem(KEY) || "{}");
+let newPerDay = parseInt(localStorage.getItem("phrases_newperday") || "7", 10);
+let includeReviews = localStorage.getItem("phrases_reviews") !== "0";
+let shuffleOn = localStorage.getItem("phrases_shuffle") === "1";
+let pyOnBack = localStorage.getItem("phrases_pyback") === "1";
+function save(){ localStorage.setItem(KEY, JSON.stringify(prog)); }
+function seen(id){ return !!(prog[id] && prog[id].seen); }
+function shuffleArr(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+let sessionNew = 0;
+let queue = [], cur = null, flipped = false;
+
+function buildQueue(){
+  const t = today();
+  const reviews = [], forced = [], fresh = [];
+  DATA.forEach(d => {
+    const p = prog[d.id];
+    if(p && p.seen){ if((p.due ?? t) <= t) reviews.push(d.id); }
+    else if(p && p.force && (p.due ?? t) <= t){ forced.push(d.id); }
+    else if(!p || (p.due ?? t) <= t){ fresh.push(d.id); }
+  });
+  const allowed = Math.max(0, newPerDay - sessionNew);
+  const newItems = forced.concat(fresh.slice(0, allowed));
+  if(shuffleOn){ shuffleArr(newItems); shuffleArr(reviews); }
+  queue = includeReviews ? newItems.concat(reviews) : newItems;
+}
+
+function refreshStats(){
+  document.getElementById("total").textContent = DATA.length;
+  document.getElementById("due").textContent = queue.length;
+  document.getElementById("learning").textContent = DATA.filter(d => seen(d.id) && (prog[d.id].box||0) < 4).length;
+  document.getElementById("learned").textContent = DATA.filter(d => seen(d.id) && (prog[d.id].box||0) >= 4).length;
+}
+
+const card = document.getElementById("card");
+const btns = document.getElementById("btns");
+const doneEl = document.getElementById("done");
+
+function renderCard(id){
+  cur = id;
+  const d = byId[id];
+  flipped = false;
+  card.classList.remove("flip");
+  btns.classList.add("hidden");
+  const tag = document.getElementById("cardtag");
+  if(seen(id)){ tag.className = "cardtag show rep"; tag.textContent = "↻ Повтор"; }
+  else { tag.className = "cardtag show new"; tag.textContent = "Новая"; }
+  document.getElementById("fhz").textContent = d.hz;
+  document.getElementById("bhz").textContent = d.hz;
+  document.getElementById("bmean").textContent = d.mean;
+  // пиньинь: на лице или на обороте
+  const fpy = document.getElementById("fpy"), bpy = document.getElementById("bpy");
+  if(pyOnBack){ fpy.textContent = ""; fpy.classList.add("hidden"); bpy.textContent = d.py; bpy.classList.remove("hidden"); }
+  else { fpy.textContent = d.py; fpy.classList.remove("hidden"); bpy.textContent = ""; bpy.classList.add("hidden"); }
+  refreshStats();
+}
+
+function show(){
+  if(queue.length === 0){
+    card.classList.add("hidden"); btns.classList.add("hidden");
+    doneEl.classList.remove("hidden"); refreshStats(); return;
+  }
+  card.classList.remove("hidden"); doneEl.classList.add("hidden");
+  renderCard(queue[0]);
+}
+
+function speak(){
+  if(cur === null) return;
+  const a = new Audio("audio/" + cur + ".mp3?v=" + AUDIO_VER);
+  a.play().catch(() => {
+    if("speechSynthesis" in window){
+      const u = new SpeechSynthesisUtterance(byId[cur].hz);
+      u.lang = "zh-CN"; u.rate = 0.85;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+    }
+  });
+}
+document.getElementById("fspeak").onclick = (e) => { e.stopPropagation(); speak(); };
+document.getElementById("bspeak").onclick = (e) => { e.stopPropagation(); speak(); };
+
+card.onclick = () => {
+  if(cur === null) return;
+  flipped = !flipped;
+  card.classList.toggle("flip", flipped);
+  btns.classList.toggle("hidden", !flipped);
+  if(flipped) speak();
+};
+
+function answer(known){
+  const wasNew = !seen(cur);
+  if(!prog[cur]) prog[cur] = { box: 0 };
+  const s = prog[cur];
+  if(wasNew){ s.seen = true; s.force = false; sessionNew++; }
+  if(known) s.box = Math.min((s.box||0) + 1, INTERVALS.length - 1);
+  else s.box = 1;
+  s.due = today() + INTERVALS[s.box];
+  save();
+  queue.shift();
+  if(!known) queue.push(cur);
+  show();
+}
+document.getElementById("bok").onclick = () => answer(true);
+document.getElementById("bno").onclick = () => answer(false);
+
+document.getElementById("reset").onclick = () => {
+  if(confirm("Сбросить весь прогресс?")){ prog = {}; save(); buildQueue(); show(); renderList(); }
+};
+
+const perdayInput = document.getElementById("perday");
+perdayInput.value = newPerDay;
+perdayInput.onchange = () => {
+  let v = parseInt(perdayInput.value, 10);
+  if(isNaN(v) || v < 1) v = 1; if(v > 50) v = 50;
+  newPerDay = v; perdayInput.value = v;
+  localStorage.setItem("phrases_newperday", String(v));
+  buildQueue(); show();
+};
+const revChk = document.getElementById("revchk");
+revChk.checked = includeReviews;
+revChk.onchange = () => {
+  includeReviews = revChk.checked;
+  localStorage.setItem("phrases_reviews", includeReviews ? "1" : "0");
+  buildQueue(); show();
+};
+const shuffleBtn = document.getElementById("shuffleBtn");
+shuffleBtn.classList.toggle("on", shuffleOn);
+shuffleBtn.onclick = () => {
+  shuffleOn = !shuffleOn;
+  localStorage.setItem("phrases_shuffle", shuffleOn ? "1" : "0");
+  shuffleBtn.classList.toggle("on", shuffleOn);
+  buildQueue(); show();
+};
+const pyposBtn = document.getElementById("pyposBtn");
+function updatePypos(){ pyposBtn.classList.toggle("on", pyOnBack); pyposBtn.textContent = pyOnBack ? "пиньинь на обороте" : "пиньинь на лице"; }
+updatePypos();
+pyposBtn.onclick = () => {
+  pyOnBack = !pyOnBack;
+  localStorage.setItem("phrases_pyback", pyOnBack ? "1" : "0");
+  updatePypos();
+  if(cur !== null) renderCard(cur);
+};
+
+// --- Все фразы ---
+const listScreen = document.getElementById("listScreen");
+function statusBadge(id){
+  if(!seen(id)) return '<span class="badge b-new">новая</span>';
+  if((prog[id].box||0) >= 4) return '<span class="badge b-done">выучена</span>';
+  return '<span class="badge b-learn">учится</span>';
+}
+function renderList(){
+  if(DATA.length === 0){ listScreen.innerHTML = '<p class="empty">Фраз пока нет. Пришли список — добавлю.</p>'; return; }
+  let html = "";
+  DATA.forEach(d => {
+    html += '<div class="row">' +
+      '<div class="rinfo">' +
+        '<div class="rhz">' + d.hz + statusBadge(d.id) + '</div>' +
+        '<div class="rpy">' + d.py + '</div>' +
+        '<div class="rmean">' + d.mean + '</div>' +
+      '</div>' +
+      '<button class="rspeak" data-say="' + d.id + '">🔊</button>' +
+    '</div>';
+  });
+  listScreen.innerHTML = html;
+}
+listScreen.addEventListener("click", (e) => {
+  const s = e.target.getAttribute("data-say");
+  if(s !== null){
+    const a = new Audio("audio/" + s + ".mp3?v=" + AUDIO_VER);
+    a.play().catch(() => {
+      if("speechSynthesis" in window){ const u = new SpeechSynthesisUtterance(byId[+s].hz); u.lang="zh-CN"; u.rate=0.85; speechSynthesis.cancel(); speechSynthesis.speak(u); }
+    });
+  }
+});
+
+// --- Вкладки ---
+const trainScreen = document.getElementById("trainScreen");
+const tabTrain = document.getElementById("tabTrain");
+const tabList = document.getElementById("tabList");
+function setTab(list){
+  tabList.classList.toggle("on", list);
+  tabTrain.classList.toggle("on", !list);
+  listScreen.style.display = list ? "block" : "none";
+  trainScreen.style.display = list ? "none" : "block";
+  if(list) renderList(); else { buildQueue(); show(); }
+}
+tabTrain.onclick = () => setTab(false);
+tabList.onclick = () => setTab(true);
+
+buildQueue();
+show();
+</script>
+</body>
+</html>
