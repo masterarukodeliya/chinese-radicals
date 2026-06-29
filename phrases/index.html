@@ -8,7 +8,7 @@
 <style>
   @font-face{
     font-family:'WenKai';
-    src:url('fonts/wenkai-phrases.woff2?v=1') format('woff2');
+    src:url('fonts/wenkai-phrases.woff2?v=2') format('woff2');
     font-display:swap;
   }
   :root{
@@ -133,12 +133,24 @@
 <script>
 const DATA = [
   {"id": 0, "hz": "一千块钱", "py": "yì qiān kuài qián", "mean": "тысяча юаней"},
-  {"id": 1, "hz": "一杯茶", "py": "yī bēi chá", "mean": "чашка чая"}
+  {"id": 1, "hz": "一杯茶", "py": "yī bēi chá", "mean": "чашка чая"},
+  {"id": 2, "hz": "请问", "py": "qǐng wèn", "mean": "позвольте спросить / скажите, пожалуйста"},
+  {"id": 3, "hz": "你怎么样？", "py": "nǐ zěnme yàng?", "mean": "как ты? / как дела?"},
+  {"id": 4, "hz": "老样子", "py": "lǎo yàngzi", "mean": "по-старому / как обычно"},
+  {"id": 5, "hz": "好，我知道了", "py": "hǎo, wǒ zhīdào le", "mean": "хорошо, я понял(а)"},
+  {"id": 6, "hz": "没有问题", "py": "méiyǒu wèntí", "mean": "нет проблем / всё в порядке"},
+  {"id": 7, "hz": "那么请问", "py": "nàme qǐng wèn", "mean": "тогда позвольте спросить"},
+  {"id": 8, "hz": "作业怎么样？", "py": "zuòyè zěnme yàng?", "mean": "как домашняя работа?"},
+  {"id": 9, "hz": "很好", "py": "hěn hǎo", "mean": "очень хорошо"},
+  {"id": 10, "hz": "没问题吧？", "py": "méi wèntí ba?", "mean": "нет проблем, да? / всё нормально?"},
+  {"id": 11, "hz": "没有", "py": "méiyǒu", "mean": "нет / отсутствует"},
+  {"id": 12, "hz": "好，我知道了，那么现在呢", "py": "hǎo, wǒ zhīdào le, nàme xiànzài ne", "mean": "хорошо, понял(а), тогда сейчас…"},
+  {"id": 13, "hz": "首先我们热一下身", "py": "shǒuxiān wǒmen rè yíxià shēn", "mean": "сначала немного разомнёмся"}
 ];
 const byId = {}; DATA.forEach(d => byId[d.id] = d);
 
 const KEY = "phrases_progress_v1";
-const AUDIO_VER = "2026-06-29-1";
+const AUDIO_VER = "2026-06-29-2";
 const INTERVALS = [0, 1, 2, 4, 7, 15, 30];
 const DAY = 86400000;
 const today = () => Math.floor(Date.now() / DAY);
