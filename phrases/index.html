@@ -8,7 +8,7 @@
 <style>
   @font-face{
     font-family:'WenKai';
-    src:url('fonts/wenkai-phrases.woff2?v=2') format('woff2');
+    src:url('fonts/wenkai-phrases.woff2?v=3') format('woff2');
     font-display:swap;
   }
   :root{
@@ -145,12 +145,13 @@ const DATA = [
   {"id": 10, "hz": "没问题吧？", "py": "méi wèntí ba?", "mean": "нет проблем, да? / всё нормально?"},
   {"id": 11, "hz": "没有", "py": "méiyǒu", "mean": "нет / отсутствует"},
   {"id": 12, "hz": "好，我知道了，那么现在呢", "py": "hǎo, wǒ zhīdào le, nàme xiànzài ne", "mean": "хорошо, понял(а), тогда сейчас…"},
-  {"id": 13, "hz": "首先我们热一下身", "py": "shǒuxiān wǒmen rè yíxià shēn", "mean": "сначала немного разомнёмся"}
+  {"id": 13, "hz": "首先我们热一下身", "py": "shǒuxiān wǒmen rè yíxià shēn", "mean": "сначала немного разомнёмся"},
+  {"id": 14, "hz": "早上好", "py": "zǎoshang hǎo", "mean": "доброе утро"}
 ];
 const byId = {}; DATA.forEach(d => byId[d.id] = d);
 
 const KEY = "phrases_progress_v1";
-const AUDIO_VER = "2026-06-29-2";
+const AUDIO_VER = "2026-06-29-3";
 const INTERVALS = [0, 1, 2, 4, 7, 15, 30];
 const DAY = 86400000;
 const today = () => Math.floor(Date.now() / DAY);
