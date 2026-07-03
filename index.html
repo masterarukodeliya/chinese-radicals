@@ -100,6 +100,11 @@
   .b-l1{background:var(--accent)} .b-l2{background:var(--card2);color:var(--dim)}
   .rvar{color:var(--accent);font-size:13px;margin-left:4px}
   .lvhead{font-size:14px;font-weight:700;color:var(--ink);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+  .searchbox{width:100%;max-width:440px;background:var(--card2);color:var(--ink);border:1px solid var(--line);
+    border-radius:10px;padding:9px 12px;font-size:14px;margin-bottom:12px}
+  .searchbox:focus{outline:none;border-color:var(--accent)}
+  #searchScreen{width:100%;max-width:440px;display:none}
+  .sempty{color:var(--dim);font-size:14px;text-align:center;margin-top:20px}
   .shufbtn{border:1px solid var(--line);background:var(--card2);color:var(--dim);
     border-radius:8px;padding:5px 10px;font-size:13px;font-weight:600;cursor:pointer}
   .shufbtn.on{border-color:var(--accent);color:var(--accent)}
@@ -175,6 +180,9 @@
   <button class="tab" id="tabExtra">Архаика</button>
   <button class="tab" id="tabGroups">📂 Подборки</button>
 </div>
+
+<input id="search" class="searchbox" placeholder="🔎 поиск: пиньинь, перевод или знак" autocomplete="off">
+<div id="searchScreen"></div>
 
 <!-- ЭКРАН ТРЕНИРОВКИ -->
 <div id="trainScreen">
@@ -1016,7 +1024,9 @@ const tabL1 = document.getElementById("tabL1");
 const tabL2 = document.getElementById("tabL2");
 const tabExtra = document.getElementById("tabExtra");
 const tabGroups = document.getElementById("tabGroups");
+let curTab = "train";
 function setTab(name){
+  curTab = name;
   tabTrain.classList.toggle("on", name === "train");
   tabL1.classList.toggle("on", name === "l1");
   tabL2.classList.toggle("on", name === "l2");
@@ -1034,11 +1044,71 @@ function setTab(name){
   if(name === "groups") renderGroups();
   if(name === "train"){ buildQueue(); show(); }
 }
-tabTrain.onclick = () => { leaveDrill(); setTab("train"); };
-tabL1.onclick = () => { leaveDrill(); setTab("l1"); };
-tabL2.onclick = () => { leaveDrill(); setTab("l2"); };
-tabExtra.onclick = () => { leaveDrill(); setTab("extra"); };
-tabGroups.onclick = () => { leaveDrill(); setTab("groups"); };
+tabTrain.onclick = () => { leaveDrill(); clearSearch(); setTab("train"); };
+tabL1.onclick = () => { leaveDrill(); clearSearch(); setTab("l1"); };
+tabL2.onclick = () => { leaveDrill(); clearSearch(); setTab("l2"); };
+tabExtra.onclick = () => { leaveDrill(); clearSearch(); setTab("extra"); };
+tabGroups.onclick = () => { leaveDrill(); clearSearch(); setTab("groups"); };
+
+// --- Поиск (по пиньиню без тонов, переводу и знаку; по всем уровням) ---
+const ALT = { 44: ["chuáng"] }; // 疒 — второе чтение
+function tonePlain(s){ return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
+const searchInput = document.getElementById("search");
+const searchScreen = document.getElementById("searchScreen");
+function levelName(l){ return l === 1 ? "база" : l === 2 ? "доп." : "архаика"; }
+function matchQuery(d, raw, q){
+  if(raw && d.main.indexOf(raw) >= 0) return true;
+  if(q && tonePlain(d.py).indexOf(q) >= 0) return true;
+  const alt = ALT[d.id] || [];
+  if(q && alt.some(a => tonePlain(a).indexOf(q) >= 0)) return true;
+  if(q && d.mean.toLowerCase().indexOf(q) >= 0) return true;
+  return false;
+}
+function renderSearch(){
+  const raw = searchInput.value.trim();
+  const q = tonePlain(raw);
+  const items = DATA.filter(d => matchQuery(d, raw, q)).sort((a, b) => a.level - b.level || a.kn - b.kn);
+  if(items.length === 0){ searchScreen.innerHTML = '<p class="sempty">Ничего не найдено.</p>'; return; }
+  let html = "";
+  items.forEach(d => {
+    const i = d.id;
+    const altTxt = (ALT[i] || []).length ? ' / ' + ALT[i].join(" / ") : "";
+    const forms = d.variants && d.variants.length ? ' <span class="rvar">' + d.variants.join(" ") + '</span>' : '';
+    html += '<div class="row">' +
+      '<input type="checkbox" class="selchk" data-sel="' + i + '"' + (selection.has(i) ? ' checked' : '') + '>' +
+      '<div class="rg">' + d.main + '</div>' +
+      '<div class="rinfo">' +
+        '<div class="rtop"><span class="rpy">' + d.py + altTxt + '</span>' + d.mean + forms +
+          ' <span class="badge b-l' + d.level + '">' + levelName(d.level) + '</span> ' + statusBadge(i) + '</div>' +
+        '<div class="rbot">№ ' + d.kn + ' · ' + dueText(i) + '</div>' +
+      '</div>' +
+      '<div class="ract">' +
+        '<button class="learn" data-learn="' + i + '">Учить</button>' +
+      '</div>' +
+    '</div>';
+  });
+  searchScreen.innerHTML = html;
+}
+searchScreen.addEventListener("change", onSelChange);
+searchScreen.addEventListener("click", (e) => {
+  const l = e.target.getAttribute("data-learn");
+  if(l !== null){ const i = +l; if(!prog[i]) prog[i] = { box: 0 }; prog[i].due = today(); prog[i].force = true; save(); buildQueue(); renderSearch(); refreshStats(); }
+});
+function enterSearch(){
+  trainScreen.style.display = "none";
+  listScreen.style.display = "none";
+  document.getElementById("listSort").style.display = "none";
+  extraScreen.style.display = "none";
+  groupsScreen.style.display = "none";
+  searchScreen.style.display = "block";
+  [tabTrain, tabL1, tabL2, tabExtra, tabGroups].forEach(t => t.classList.remove("on"));
+  updateSelBar();
+}
+function clearSearch(){ searchInput.value = ""; searchScreen.style.display = "none"; }
+searchInput.oninput = () => {
+  if(searchInput.value.trim()){ leaveDrill(); enterSearch(); renderSearch(); }
+  else { searchScreen.style.display = "none"; setTab(curTab === undefined ? "train" : (["l1","l2","extra","groups","train"].includes(curTab) ? curTab : "train")); }
+};
 
 buildQueue();
 show();
