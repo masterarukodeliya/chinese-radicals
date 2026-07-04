@@ -40,6 +40,7 @@
     padding:3px 10px;border-radius:8px;color:#0f1115;display:none}
   .cardtag.show{display:block}
   .cardtag.rep{background:var(--no)} .cardtag.new{background:var(--new)}
+  .cardtag.old{background:var(--dim)}
   .card{position:relative;width:100%;max-width:380px;min-height:320px;background:var(--card);
     border:1px solid var(--line);border-radius:20px;cursor:pointer;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -59,6 +60,11 @@
     font-weight:600;color:#0f1115;cursor:pointer}
   .no{background:var(--no)} .ok{background:var(--ok)}
   .btns.hidden{visibility:hidden}
+  .navbtns{display:flex;gap:12px;width:100%;max-width:380px;margin-top:10px}
+  .navbtns button{flex:1;padding:10px 0;border:1px solid var(--line);border-radius:12px;
+    font-size:14px;font-weight:600;color:var(--ink);background:var(--card2);cursor:pointer}
+  .navbtns button:disabled{opacity:.35;cursor:default}
+  .navbtns.hidden{display:none}
   .done{text-align:center;margin-top:40px;color:var(--dim);max-width:340px}
   .done b{color:var(--ink)}
   .reset{margin-top:24px;background:none;color:var(--dim);border:1px solid var(--line);
@@ -121,6 +127,11 @@
     <button class="ok" id="bok">Помню</button>
   </div>
 
+  <div class="navbtns hidden" id="navbtns">
+    <button id="bprev">← Назад</button>
+    <button id="bnext">Вперёд →</button>
+  </div>
+
   <div id="done" class="done hidden">
     <p><b>Сессия пройдена.</b><br>Новые фразы на сегодня закончились. Обнови страницу для новой сессии или подними лимит.</p>
   </div>
@@ -167,6 +178,7 @@ function shuffleArr(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.r
 
 let sessionNew = 0;
 let queue = [], cur = null, flipped = false;
+let history = [], histPos = -1;
 
 function buildQueue(){
   const t = today();
@@ -193,6 +205,14 @@ function refreshStats(){
 const card = document.getElementById("card");
 const btns = document.getElementById("btns");
 const doneEl = document.getElementById("done");
+const navbtns = document.getElementById("navbtns");
+const bprev = document.getElementById("bprev");
+const bnext = document.getElementById("bnext");
+
+function updateNav(){
+  bprev.disabled = histPos <= 0;
+  bnext.disabled = histPos >= history.length - 1;
+}
 
 function renderCard(id){
   cur = id;
@@ -200,8 +220,10 @@ function renderCard(id){
   flipped = false;
   card.classList.remove("flip");
   btns.classList.add("hidden");
+  const reviewing = histPos < history.length - 1;
   const tag = document.getElementById("cardtag");
-  if(seen(id)){ tag.className = "cardtag show rep"; tag.textContent = "↻ Повтор"; }
+  if(reviewing){ tag.className = "cardtag show old"; tag.textContent = "Просмотр"; }
+  else if(seen(id)){ tag.className = "cardtag show rep"; tag.textContent = "↻ Повтор"; }
   else { tag.className = "cardtag show new"; tag.textContent = "Новая"; }
   document.getElementById("fhz").textContent = d.hz;
   document.getElementById("bhz").textContent = d.hz;
@@ -210,16 +232,22 @@ function renderCard(id){
   const fpy = document.getElementById("fpy"), bpy = document.getElementById("bpy");
   if(pyOnBack){ fpy.textContent = ""; fpy.classList.add("hidden"); bpy.textContent = d.py; bpy.classList.remove("hidden"); }
   else { fpy.textContent = d.py; fpy.classList.remove("hidden"); bpy.textContent = ""; bpy.classList.add("hidden"); }
+  updateNav();
   refreshStats();
 }
 
 function show(){
   if(queue.length === 0){
     card.classList.add("hidden"); btns.classList.add("hidden");
+    navbtns.classList.add("hidden");
     doneEl.classList.remove("hidden"); refreshStats(); return;
   }
   card.classList.remove("hidden"); doneEl.classList.add("hidden");
-  renderCard(queue[0]);
+  navbtns.classList.remove("hidden");
+  const next = queue[0];
+  if(history[history.length - 1] !== next) history.push(next);
+  histPos = history.length - 1;
+  renderCard(next);
 }
 
 function speak(){
@@ -240,8 +268,19 @@ card.onclick = () => {
   if(cur === null) return;
   flipped = !flipped;
   card.classList.toggle("flip", flipped);
-  btns.classList.toggle("hidden", !flipped);
+  // в режиме просмотра истории кнопки «Забыл/Помню» не показываем — карточка уже оценена
+  const reviewing = histPos < history.length - 1;
+  btns.classList.toggle("hidden", !flipped || reviewing);
   if(flipped) speak();
+};
+
+bprev.onclick = (e) => {
+  e.stopPropagation();
+  if(histPos > 0){ histPos--; renderCard(history[histPos]); }
+};
+bnext.onclick = (e) => {
+  e.stopPropagation();
+  if(histPos < history.length - 1){ histPos++; renderCard(history[histPos]); }
 };
 
 function answer(known){
