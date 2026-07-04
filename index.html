@@ -14,7 +14,7 @@
 <style>
   @font-face{
     font-family:'WenKai';
-    src:url('fonts/wenkai-subset.woff2?v=2') format('woff2');
+    src:url('fonts/wenkai-subset.woff2?v=2?v=2') format('woff2');
     font-display:swap;
   }
   :root{
@@ -338,7 +338,7 @@ const DATA = [
   {"id": 41, "kn": 40, "main": "宀", "variants": [], "py": "mián", "mean": "крыша / дом", "level": 1, "ex": "家", "expy": "jiā", "exmean": "дом", "mn": "Крыша с трубой над домом."},
   {"id": 42, "kn": 53, "main": "广", "variants": [], "py": "guǎng", "mean": "навес", "level": 1, "ex": "店", "expy": "diàn", "exmean": "магазин", "mn": "Навес, пристроенный к стене."},
   {"id": 43, "kn": 27, "main": "厂", "variants": [], "py": "hǎn", "mean": "обрыв / склон", "level": 1, "ex": "厅", "expy": "tīng", "exmean": "зал", "mn": "Скала с козырьком."},
-  {"id": 44, "kn": 104, "main": "疒", "variants": [], "py": "nè", "mean": "болезнь", "level": 1, "ex": "病", "expy": "bìng", "exmean": "болезнь", "mn": "Человек в кровати под навесом — болеет."},
+  {"id": 44, "kn": 104, "main": "疒", "variants": [], "py": "chuáng / nè", "mean": "болезнь", "level": 1, "ex": "病", "expy": "bìng", "exmean": "болезнь", "mn": "Человек в кровати под навесом — болеет."},
   {"id": 45, "kn": 162, "main": "辶", "variants": [], "py": "chuò", "mean": "движение / дорога", "level": 1, "ex": "这", "expy": "zhè", "exmean": "это", "mn": "Шаг с дорожкой-волной снизу."},
   {"id": 46, "kn": 15, "main": "冫", "variants": [], "py": "bīng", "mean": "лёд", "level": 1, "ex": "冷", "expy": "lěng", "exmean": "холодно", "mn": "Две льдинки."},
   {"id": 47, "kn": 60, "main": "彳", "variants": [], "py": "chì", "mean": "шаг", "level": 1, "ex": "很", "expy": "hěn", "exmean": "очень", "mn": "Двойной шаг — перекрёсток дорог."},
@@ -476,7 +476,7 @@ const DATA = [
   {"id": 179, "kn": 89, "main": "爻", "variants": [], "py": "yáo", "mean": "черты гексаграммы", "level": 3},
   {"id": 180, "kn": 90, "main": "爿", "variants": [], "py": "pán", "mean": "левая половина (доски)", "level": 3},
   {"id": 181, "kn": 95, "main": "玄", "variants": [], "py": "xuán", "mean": "тёмный, тайный", "level": 3},
-  {"id": 182, "kn": 103, "main": "疋", "variants": [], "py": "pǐ", "mean": "штука ткани; нога", "level": 3},
+  {"id": 182, "kn": 103, "main": "疋", "variants": ["⺪"], "py": "pǐ", "mean": "штука ткани; нога", "level": 3},
   {"id": 183, "kn": 105, "main": "癶", "variants": [], "py": "bō", "mean": "расходящиеся ноги", "level": 3},
   {"id": 184, "kn": 114, "main": "禸", "variants": [], "py": "róu", "mean": "след зверя", "level": 3},
   {"id": 185, "kn": 121, "main": "缶", "variants": [], "py": "fǒu", "mean": "глиняный сосуд", "level": 3},
@@ -665,7 +665,7 @@ function show(){
 }
 
 // --- Озвучка (если форма записана как 氵(水) — читаем 水; убираем пометки 左/右) ---
-const AUDIO_VER = "2026-06-20-jiong";
+const AUDIO_VER = "2026-07-02-nezc";
 let zhVoice = null;
 function pickVoice(){
   if(!("speechSynthesis" in window)) return;
@@ -1051,7 +1051,7 @@ tabExtra.onclick = () => { leaveDrill(); clearSearch(); setTab("extra"); };
 tabGroups.onclick = () => { leaveDrill(); clearSearch(); setTab("groups"); };
 
 // --- Поиск (по пиньиню без тонов, переводу и знаку; по всем уровням) ---
-const ALT = { 44: ["chuáng"] }; // 疒 — второе чтение
+const ALT = {}; // второе чтение теперь в подписи py
 function tonePlain(s){ return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
 const searchInput = document.getElementById("search");
 const searchScreen = document.getElementById("searchScreen");
