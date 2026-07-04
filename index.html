@@ -615,7 +615,8 @@ function renderCard(i){
   const reviewing = histPos < history.length - 1;
   // метка: дрилл подборки / просмотр истории / повтор / новый ключ
   const tag = document.getElementById("cardtag");
-  if(drill){ tag.className = "cardtag show rep"; tag.textContent = "📂 Подборка"; }
+  if(drill && reviewing){ tag.className = "cardtag show old"; tag.textContent = "Просмотр"; }
+  else if(drill){ tag.className = "cardtag show rep"; tag.textContent = "📂 Подборка"; }
   else if(reviewing){ tag.className = "cardtag show old"; tag.textContent = "Просмотр"; }
   else if(seen(i)){ tag.className = "cardtag show rep"; tag.textContent = "↻ Повтор"; }
   else { tag.className = "cardtag show new"; tag.textContent = "Новый"; }
@@ -984,18 +985,23 @@ function startDrill(group){
   drillShow();
 }
 function drillShow(){
-  navbtns.classList.add("hidden");
   drillDone.classList.add("hidden");
   if(drill.queue.length === 0){
     card.classList.add("hidden"); btns.classList.add("hidden");
+    navbtns.classList.add("hidden");
     drillInfo.textContent = "Подборка «" + drill.name + "»";
     drillDone.classList.remove("hidden");
     return;
   }
   card.classList.remove("hidden");
+  navbtns.classList.remove("hidden");
   drillInfo.textContent = "Подборка «" + drill.name + "» · осталось " + drill.queue.length + " из " + drill.total;
-  history = []; histPos = -1;
-  renderCard(drill.queue[0]);
+  // навигация «Назад/Вперёд» через ту же историю показанных карточек
+  const next = drill.queue[0];
+  if(history[history.length - 1] !== next) history.push(next);
+  histPos = history.length - 1;
+  updateNav();
+  renderCard(next);
 }
 function drillAnswer(known){
   if(known) drill.queue.shift();          // помню — убрать из круга
@@ -1007,6 +1013,8 @@ function leaveDrill(){
   drill = null;
   drillBar.classList.add("hidden");
   drillDone.classList.add("hidden");
+  navbtns.classList.add("hidden");
+  history = []; histPos = -1;
   srsControls.classList.remove("hidden");
   resetBtn.classList.remove("hidden");
 }
@@ -1014,6 +1022,7 @@ document.getElementById("drillExit").onclick = () => { leaveDrill(); setTab("gro
 document.getElementById("drillBack").onclick = () => { leaveDrill(); setTab("groups"); };
 document.getElementById("drillRestart").onclick = () => {
   drill.queue = shuffleArr(drill.ids.slice());
+  history = []; histPos = -1;
   drillShow();
 };
 
