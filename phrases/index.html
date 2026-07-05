@@ -26,6 +26,10 @@
   .tab{padding:8px 16px;border-radius:10px;border:1px solid var(--line);background:none;
     color:var(--dim);font-size:14px;font-weight:600;cursor:pointer}
   .tab.on{background:var(--card2);color:var(--ink)}
+  .decks{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;justify-content:center}
+  .deck{padding:7px 15px;border-radius:20px;border:1px solid var(--line);background:none;
+    color:var(--dim);font-size:13px;font-weight:600;cursor:pointer}
+  .deck.on{background:var(--accent);border-color:var(--accent);color:#0f1115}
   .bar{display:flex;gap:14px;font-size:13px;color:var(--dim);margin-bottom:10px;flex-wrap:wrap;justify-content:center}
   .bar b{color:var(--ink)}
   .setting{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--dim);margin-bottom:10px;flex-wrap:wrap;justify-content:center}
@@ -87,6 +91,8 @@
 <h1>Китайские фразы</h1>
 <div class="sub">фраза · пиньинь · перевод · озвучка · интервальное повторение</div>
 
+<div class="decks" id="decks"></div>
+
 <div class="tabs">
   <button class="tab on" id="tabTrain">Тренировка</button>
   <button class="tab" id="tabList">Все фразы</button>
@@ -142,26 +148,56 @@
 <div id="listScreen"></div>
 
 <script>
-const DATA = [
-  {"id": 0, "hz": "一千块钱", "py": "yì qiān kuài qián", "mean": "тысяча юаней"},
-  {"id": 1, "hz": "一杯茶", "py": "yī bēi chá", "mean": "чашка чая"},
-  {"id": 2, "hz": "请问", "py": "qǐng wèn", "mean": "позвольте спросить / скажите, пожалуйста"},
-  {"id": 3, "hz": "你怎么样？", "py": "nǐ zěnme yàng?", "mean": "как ты? / как дела?"},
-  {"id": 4, "hz": "老样子", "py": "lǎo yàngzi", "mean": "по-старому / как обычно"},
-  {"id": 5, "hz": "好，我知道了", "py": "hǎo, wǒ zhīdào le", "mean": "хорошо, я понял(а)"},
-  {"id": 6, "hz": "没有问题", "py": "méiyǒu wèntí", "mean": "нет проблем / всё в порядке"},
-  {"id": 7, "hz": "那么请问", "py": "nàme qǐng wèn", "mean": "тогда позвольте спросить"},
-  {"id": 8, "hz": "作业怎么样？", "py": "zuòyè zěnme yàng?", "mean": "как домашняя работа?"},
-  {"id": 9, "hz": "很好", "py": "hěn hǎo", "mean": "очень хорошо"},
-  {"id": 10, "hz": "没问题吧？", "py": "méi wèntí ba?", "mean": "нет проблем, да? / всё нормально?"},
-  {"id": 11, "hz": "没有", "py": "méiyǒu", "mean": "нет / отсутствует"},
-  {"id": 12, "hz": "好，我知道了，那么现在呢", "py": "hǎo, wǒ zhīdào le, nàme xiànzài ne", "mean": "хорошо, понял(а), тогда сейчас…"},
-  {"id": 13, "hz": "首先我们热一下身", "py": "shǒuxiān wǒmen rè yíxià shēn", "mean": "сначала немного разомнёмся"},
-  {"id": 14, "hz": "早上好", "py": "zǎoshang hǎo", "mean": "доброе утро"}
+const DECKS = [
+  { id:"phrases", name:"Фразы", key:"phrases_progress_v1", audioDir:"audio/", data:[
+    {"id": 0, "hz": "一千块钱", "py": "yì qiān kuài qián", "mean": "тысяча юаней"},
+    {"id": 1, "hz": "一杯茶", "py": "yī bēi chá", "mean": "чашка чая"},
+    {"id": 2, "hz": "请问", "py": "qǐng wèn", "mean": "позвольте спросить / скажите, пожалуйста"},
+    {"id": 3, "hz": "你怎么样？", "py": "nǐ zěnme yàng?", "mean": "как ты? / как дела?"},
+    {"id": 4, "hz": "老样子", "py": "lǎo yàngzi", "mean": "по-старому / как обычно"},
+    {"id": 5, "hz": "好，我知道了", "py": "hǎo, wǒ zhīdào le", "mean": "хорошо, я понял(а)"},
+    {"id": 6, "hz": "没有问题", "py": "méiyǒu wèntí", "mean": "нет проблем / всё в порядке"},
+    {"id": 7, "hz": "那么请问", "py": "nàme qǐng wèn", "mean": "тогда позвольте спросить"},
+    {"id": 8, "hz": "作业怎么样？", "py": "zuòyè zěnme yàng?", "mean": "как домашняя работа?"},
+    {"id": 9, "hz": "很好", "py": "hěn hǎo", "mean": "очень хорошо"},
+    {"id": 10, "hz": "没问题吧？", "py": "méi wèntí ba?", "mean": "нет проблем, да? / всё нормально?"},
+    {"id": 11, "hz": "没有", "py": "méiyǒu", "mean": "нет / отсутствует"},
+    {"id": 12, "hz": "好，我知道了，那么现在呢", "py": "hǎo, wǒ zhīdào le, nàme xiànzài ne", "mean": "хорошо, понял(а), тогда сейчас…"},
+    {"id": 13, "hz": "首先我们热一下身", "py": "shǒuxiān wǒmen rè yíxià shēn", "mean": "сначала немного разомнёмся"},
+    {"id": 14, "hz": "早上好", "py": "zǎoshang hǎo", "mean": "доброе утро"}
+  ]},
+  { id:"bu", name:"不 · тоны", key:"phrases_bu_v1", audioDir:null, data:[
+    {"id": 0, "hz": "我不去北京。", "py": "wǒ bú qù Běijīng", "mean": "Я не еду в Пекин · 不 перед 4-м тоном → bú"},
+    {"id": 1, "hz": "他不高。", "py": "tā bù gāo", "mean": "Он невысокий · 不 перед 1-м тоном → bù"},
+    {"id": 2, "hz": "这不对。", "py": "zhè bú duì", "mean": "Это неправильно · 不 перед 4-м тоном → bú"},
+    {"id": 3, "hz": "我不是老师。", "py": "wǒ bú shì lǎoshī", "mean": "Я не учитель · 不 перед 4-м тоном → bú"},
+    {"id": 4, "hz": "他不忙。", "py": "tā bù máng", "mean": "Он не занят · 不 перед 2-м тоном → bù"},
+    {"id": 5, "hz": "我不喜欢咖啡。", "py": "wǒ bù xǐhuan kāfēi", "mean": "Я не люблю кофе · 不 перед 3-м тоном → bù"},
+    {"id": 6, "hz": "我不在家。", "py": "wǒ bú zài jiā", "mean": "Меня нет дома · 不 перед 4-м тоном → bú"},
+    {"id": 7, "hz": "他不学习。", "py": "tā bù xuéxí", "mean": "Он не учится · 不 перед 2-м тоном → bù"},
+    {"id": 8, "hz": "我不喜欢下雨。", "py": "wǒ bù xǐhuan xiàyǔ", "mean": "Я не люблю дождь · 不 перед 3-м тоном → bù"},
+    {"id": 9, "hz": "我们不累。", "py": "wǒmen bú lèi", "mean": "Мы не устали · 不 перед 4-м тоном → bú"},
+    {"id": 10, "hz": "他不喝茶。", "py": "tā bù hē chá", "mean": "Он не пьёт чай · 不 перед 1-м тоном → bù"},
+    {"id": 11, "hz": "我不想去。", "py": "wǒ bù xiǎng qù", "mean": "Я не хочу идти · 不 перед 3-м тоном → bù"},
+    {"id": 12, "hz": "她不爱唱歌。", "py": "tā bú ài chànggē", "mean": "Она не любит петь · 不 перед 4-м тоном → bú"},
+    {"id": 13, "hz": "我不懂。", "py": "wǒ bù dǒng", "mean": "Я не понимаю · 不 перед 3-м тоном → bù"},
+    {"id": 14, "hz": "他们不常看电视。", "py": "tāmen bù cháng kàn diànshì", "mean": "Они не часто смотрят ТВ · 不 перед 2-м тоном → bù"},
+    {"id": 15, "hz": "他今天不来学校。", "py": "tā jīntiān bù lái xuéxiào", "mean": "Он сегодня не придёт в школу · 不 перед 2-м тоном → bù"},
+    {"id": 16, "hz": "我不太忙。", "py": "wǒ bú tài máng", "mean": "Я не очень занят · 不 перед 4-м тоном → bú"},
+    {"id": 17, "hz": "这本书不贵。", "py": "zhè běn shū bú guì", "mean": "Эта книга недорогая · 不 перед 4-м тоном → bú"},
+    {"id": 18, "hz": "他不喜欢运动。", "py": "tā bù xǐhuan yùndòng", "mean": "Он не любит спорт · 不 перед 3-м тоном → bù"},
+    {"id": 19, "hz": "我们不晚。", "py": "wǒmen bù wǎn", "mean": "Мы не опаздываем · 不 перед 3-м тоном → bù"}
+  ]}
 ];
-const byId = {}; DATA.forEach(d => byId[d.id] = d);
+let deckId = localStorage.getItem("phrases_deck") || "phrases";
+if(!DECKS.some(d => d.id === deckId)) deckId = "phrases";
+let deck = DECKS.find(d => d.id === deckId);
+let DATA = deck.data;
+let byId = {};
+function buildById(){ byId = {}; DATA.forEach(d => byId[d.id] = d); }
+buildById();
 
-const KEY = "phrases_progress_v1";
+let KEY = deck.key;
 const AUDIO_VER = "2026-06-29-3";
 const INTERVALS = [0, 1, 2, 4, 7, 15, 30];
 const DAY = 86400000;
@@ -250,16 +286,22 @@ function show(){
   renderCard(next);
 }
 
+function ttsHz(id){
+  if("speechSynthesis" in window){
+    const u = new SpeechSynthesisUtterance(byId[id].hz);
+    u.lang = "zh-CN"; u.rate = 0.85;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }
+}
+function playAudio(id){
+  if(deck.audioDir){
+    const a = new Audio(deck.audioDir + id + ".mp3?v=" + AUDIO_VER);
+    a.play().catch(() => ttsHz(id));
+  } else ttsHz(id);
+}
 function speak(){
   if(cur === null) return;
-  const a = new Audio("audio/" + cur + ".mp3?v=" + AUDIO_VER);
-  a.play().catch(() => {
-    if("speechSynthesis" in window){
-      const u = new SpeechSynthesisUtterance(byId[cur].hz);
-      u.lang = "zh-CN"; u.rate = 0.85;
-      speechSynthesis.cancel(); speechSynthesis.speak(u);
-    }
-  });
+  playAudio(cur);
 }
 document.getElementById("fspeak").onclick = (e) => { e.stopPropagation(); speak(); };
 document.getElementById("bspeak").onclick = (e) => { e.stopPropagation(); speak(); };
@@ -361,19 +403,16 @@ function renderList(){
 }
 listScreen.addEventListener("click", (e) => {
   const s = e.target.getAttribute("data-say");
-  if(s !== null){
-    const a = new Audio("audio/" + s + ".mp3?v=" + AUDIO_VER);
-    a.play().catch(() => {
-      if("speechSynthesis" in window){ const u = new SpeechSynthesisUtterance(byId[+s].hz); u.lang="zh-CN"; u.rate=0.85; speechSynthesis.cancel(); speechSynthesis.speak(u); }
-    });
-  }
+  if(s !== null) playAudio(+s);
 });
 
 // --- Вкладки ---
 const trainScreen = document.getElementById("trainScreen");
 const tabTrain = document.getElementById("tabTrain");
 const tabList = document.getElementById("tabList");
+let onList = false;
 function setTab(list){
+  onList = list;
   tabList.classList.toggle("on", list);
   tabTrain.classList.toggle("on", !list);
   listScreen.style.display = list ? "block" : "none";
@@ -382,6 +421,33 @@ function setTab(list){
 }
 tabTrain.onclick = () => setTab(false);
 tabList.onclick = () => setTab(true);
+
+// --- Подборки (декi) ---
+const decksBar = document.getElementById("decks");
+function renderDecks(){
+  decksBar.innerHTML = "";
+  DECKS.forEach(d => {
+    const b = document.createElement("button");
+    b.className = "deck" + (d.id === deckId ? " on" : "");
+    b.textContent = d.name;
+    b.onclick = () => switchDeck(d.id);
+    decksBar.appendChild(b);
+  });
+}
+function switchDeck(id){
+  if(id === deckId) return;
+  deckId = id; localStorage.setItem("phrases_deck", id);
+  deck = DECKS.find(d => d.id === id);
+  DATA = deck.data; buildById();
+  KEY = deck.key;
+  prog = JSON.parse(localStorage.getItem(KEY) || "{}");
+  sessionNew = 0;
+  history = []; histPos = -1; cur = null;
+  renderDecks();
+  buildQueue();
+  if(onList) renderList(); else show();
+}
+renderDecks();
 
 buildQueue();
 show();
