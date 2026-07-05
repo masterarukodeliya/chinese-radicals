@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>不 — смена тона (bù / bú)</title>
+<meta name="theme-color" content="#0f1115">
+<style>
+  :root{
+    --bg:#0f1115; --card:#1a1e26; --line:#2c3442;
+    --ink:#e8ecf2; --dim:#8b95a7; --accent:#e0533d; --bu2:#3ecf8e;
+    --hanzi:'Noto Serif SC','Songti SC','SimSun',serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg);color:var(--ink);min-height:100vh;padding:18px 14px 48px;
+    display:flex;flex-direction:column;align-items:center}
+  h1{font-size:19px;font-weight:600;margin:2px 0 4px;text-align:center}
+  .sub{color:var(--dim);font-size:13px;margin-bottom:16px;text-align:center;max-width:420px}
+  .rule{max-width:440px;background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:12px 16px;font-size:14px;line-height:1.5;margin-bottom:18px}
+  .rule b{color:var(--accent)}
+  .list{width:100%;max-width:440px}
+  .item{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:14px 16px;margin-bottom:10px}
+  .sent{font-family:var(--hanzi);font-size:26px;line-height:2.4}
+  ruby{margin:0 1px}
+  rt{font-family:-apple-system,system-ui,sans-serif;font-size:12px;color:var(--accent);
+    font-weight:600;user-select:none;-webkit-user-select:none}
+  rt.g{color:var(--bu2)}
+  .note{color:var(--dim);font-size:12.5px;margin-top:6px}
+  .note .b4{color:var(--accent);font-weight:600}
+  .note .b2{color:var(--bu2);font-weight:600}
+  .hint{max-width:440px;color:var(--dim);font-size:12.5px;margin-top:6px;text-align:center;line-height:1.5}
+  .hint code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12px}
+</style>
+</head>
+<body>
+<h1>不 — смена тона</h1>
+<div class="sub">Пиньинь стоит над иероглифами. Выделяй и копируй — в буфер попадут только иероглифы, без пиньиня.</div>
+
+<div class="rule">
+  <b>Правило.</b> 不 читается <b>bú</b> (восходящий) перед слогом 4-го тона.
+  Во всех остальных случаях (перед 1-м, 2-м, 3-м тоном) — <span style="color:var(--bu2)">bù</span> (падающий).
+</div>
+
+<div class="list" id="list"></div>
+
+<div class="hint">Проверка: выдели любую строку и вставь в заметки — придёт чистый текст иероглифами.</div>
+
+<script>
+// [иероглиф, пиньинь]; для 不 третий элемент "4" = bú (перед 4-м тоном), иначе bù
+const DATA = [
+  { s:[["我","Wǒ"],["不","bú","4"],["去","qù"],["北京","Běijīng"]], t:4 },
+  { s:[["他","Tā"],["不","bù"],["高","gāo"]], t:1 },
+  { s:[["这","Zhè"],["不","bú","4"],["对","duì"]], t:4 },
+  { s:[["我","Wǒ"],["不","bú","4"],["是","shì"],["老师","lǎoshī"]], t:4 },
+  { s:[["他","Tā"],["不","bù"],["忙","máng"]], t:2 },
+  { s:[["我","Wǒ"],["不","bù"],["喜欢","xǐhuan"],["咖啡","kāfēi"]], t:3 },
+  { s:[["我","Wǒ"],["不","bú","4"],["在","zài"],["家","jiā"]], t:4 },
+  { s:[["他","Tā"],["不","bù"],["学习","xuéxí"]], t:2 },
+  { s:[["我","Wǒ"],["不","bù"],["喜欢","xǐhuan"],["下雨","xiàyǔ"]], t:3 },
+  { s:[["我们","Wǒmen"],["不","bú","4"],["累","lèi"]], t:4 },
+  { s:[["他","Tā"],["不","bù"],["喝","hē"],["茶","chá"]], t:1 },
+  { s:[["我","Wǒ"],["不","bù"],["想","xiǎng"],["去","qù"]], t:3 },
+  { s:[["她","Tā"],["不","bú","4"],["爱","ài"],["唱歌","chànggē"]], t:4 },
+  { s:[["我","Wǒ"],["不","bù"],["懂","dǒng"]], t:3 },
+  { s:[["他们","Tāmen"],["不","bù"],["常","cháng"],["看","kàn"],["电视","diànshì"]], t:2 },
+  { s:[["他","Tā"],["今天","jīntiān"],["不","bù"],["来","lái"],["学校","xuéxiào"]], t:2 },
+  { s:[["我","Wǒ"],["不","bú","4"],["太","tài"],["忙","máng"]], t:4 },
+  { s:[["这","Zhè"],["本","běn"],["书","shū"],["不","bú","4"],["贵","guì"]], t:4 },
+  { s:[["他","Tā"],["不","bù"],["喜欢","xǐhuan"],["运动","yùndòng"]], t:3 },
+  { s:[["我们","Wǒmen"],["不","bù"],["晚","wǎn"]], t:3 }
+];
+const TN = {1:"1-м",2:"2-м",3:"3-м",4:"4-м"};
+const list = document.getElementById("list");
+DATA.forEach(row => {
+  let sent = "";
+  row.s.forEach(seg => {
+    // 不: bú (перед 4-м тоном) — красный; bù — зелёный; прочие слоги — без цвета
+    const cls = seg[0] === "不" ? (seg[2] === "4" ? "" : " class=\"g\"") : "";
+    sent += "<ruby>" + seg[0] + "<rt" + cls + ">" + seg[1] + "</rt></ruby>";
+  });
+  sent += "<ruby>。</ruby>";
+  const bu = row.t === 4 ? "<span class=\"b4\">bú</span> (восходящий)" : "<span class=\"b2\">bù</span> (падающий)";
+  const note = "不 перед " + TN[row.t] + " тоном → " + bu;
+  list.insertAdjacentHTML("beforeend",
+    "<div class=\"item\"><div class=\"sent\">" + sent + "</div><div class=\"note\">" + note + "</div></div>");
+});
+</script>
+</body>
+</html>
