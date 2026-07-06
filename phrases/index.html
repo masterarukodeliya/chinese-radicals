@@ -18,20 +18,23 @@
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
-    background:var(--bg);color:var(--ink);min-height:100vh;
-    display:flex;flex-direction:column;align-items:center;padding:16px 14px 40px}
-  h1{font-size:18px;font-weight:600;margin:4px 0 2px}
-  .sub{color:var(--dim);font-size:13px;margin-bottom:14px;text-align:center}
-  .tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;justify-content:center}
+    background:var(--bg);color:var(--ink);height:100vh;height:100dvh;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;padding:8px 14px 10px}
+  h1{font-size:16px;font-weight:600;margin:0 0 6px;text-align:center}
+  .sub{display:none}
+  .tabs{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;justify-content:center}
   .tab{padding:8px 16px;border-radius:10px;border:1px solid var(--line);background:none;
     color:var(--dim);font-size:14px;font-weight:600;cursor:pointer}
   .tab.on{background:var(--card2);color:var(--ink)}
-  .decks{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;justify-content:center}
+  .decks{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;justify-content:center}
   .deck{padding:7px 15px;border-radius:20px;border:1px solid var(--line);background:none;
     color:var(--dim);font-size:13px;font-weight:600;cursor:pointer}
   .deck.on{background:var(--accent);border-color:var(--accent);color:#0f1115}
-  .bar{display:flex;gap:14px;font-size:13px;color:var(--dim);margin-bottom:10px;flex-wrap:wrap;justify-content:center}
+  .bar{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--dim);margin-bottom:8px;flex-wrap:wrap;justify-content:center}
   .bar b{color:var(--ink)}
+  .gear{border:1px solid var(--line);background:var(--card2);color:var(--ink);border-radius:8px;
+    padding:3px 9px;font-size:14px;line-height:1;cursor:pointer}
+  .gear.on{border-color:var(--accent)}
   .setting{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--dim);margin-bottom:10px;flex-wrap:wrap;justify-content:center}
   .setting input[type=number]{width:60px;background:var(--card2);color:var(--ink);border:1px solid var(--line);
     border-radius:8px;padding:5px 8px;font-size:14px;text-align:center}
@@ -45,10 +48,11 @@
   .cardtag.show{display:block}
   .cardtag.rep{background:var(--no)} .cardtag.new{background:var(--new)}
   .cardtag.old{background:var(--dim)}
-  .card{position:relative;width:100%;max-width:380px;min-height:320px;background:var(--card);
-    border:1px solid var(--line);border-radius:20px;cursor:pointer;
+  #trainScreen{display:flex;flex-direction:column;align-items:center;flex:1;min-height:0;width:100%;max-width:380px}
+  .card{position:relative;width:100%;max-width:380px;flex:1 1 auto;min-height:150px;background:var(--card);
+    border:1px solid var(--line);border-radius:20px;cursor:pointer;overflow:hidden;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    padding:28px 22px;text-align:center;user-select:none}
+    padding:24px 22px;text-align:center;user-select:none}
   .hz{font-size:46px;line-height:1.3;margin-bottom:14px;font-family:var(--hanzi)}
   .py{font-size:21px;color:var(--accent);margin-bottom:10px}
   .mean{font-size:20px;margin-bottom:8px}
@@ -71,9 +75,9 @@
   .navbtns.hidden{display:none}
   .done{text-align:center;margin-top:40px;color:var(--dim);max-width:340px}
   .done b{color:var(--ink)}
-  .reset{margin-top:24px;background:none;color:var(--dim);border:1px solid var(--line);
-    border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer}
-  #listScreen{width:100%;max-width:460px;display:none}
+  .reset{margin-top:0;background:none;color:var(--dim);border:1px solid var(--line);
+    border-radius:10px;padding:6px 12px;font-size:12px;cursor:pointer}
+  #listScreen{width:100%;max-width:460px;display:none;flex:1;min-height:0;overflow-y:auto}
   .row{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--line)}
   .rinfo{flex:1;min-width:0}
   .rhz{font-size:20px;font-family:var(--hanzi)}
@@ -100,16 +104,18 @@
 
 <div id="trainScreen">
   <div class="bar">
-    <span>В очереди: <b id="due">0</b></span>
-    <span>Изучается: <b id="learning">0</b></span>
-    <span>Освоено: <b id="learned">0</b>/<b id="total">0</b></span>
+    <span>Очередь: <b id="due">0</b></span>
+    <span>Учу: <b id="learning">0</b></span>
+    <span>Знаю: <b id="learned">0</b>/<b id="total">0</b></span>
+    <button class="gear" id="gear" title="Настройки">⚙</button>
   </div>
-  <div class="setting">
+  <div class="setting hidden" id="setting">
     Новых за сессию:
     <input type="number" id="perday" min="1" max="50" step="1">
     <label class="chk"><input type="checkbox" id="revchk" checked> повторы</label>
     <button class="toggle" id="shuffleBtn">🔀 перемешать</button>
     <button class="toggle" id="pyposBtn">пиньинь на обороте</button>
+    <button class="reset" id="reset">Сбросить прогресс</button>
   </div>
 
   <div id="card" class="card">
@@ -141,8 +147,6 @@
   <div id="done" class="done hidden">
     <p><b>Сессия пройдена.</b><br>Новые фразы на сегодня закончились. Обнови страницу для новой сессии или подними лимит.</p>
   </div>
-
-  <button class="reset" id="reset">Сбросить весь прогресс</button>
 </div>
 
 <div id="listScreen"></div>
@@ -418,11 +422,19 @@ function setTab(list){
   tabList.classList.toggle("on", list);
   tabTrain.classList.toggle("on", !list);
   listScreen.style.display = list ? "block" : "none";
-  trainScreen.style.display = list ? "none" : "block";
+  trainScreen.style.display = list ? "none" : "flex";
   if(list) renderList(); else { buildQueue(); show(); }
 }
 tabTrain.onclick = () => setTab(false);
 tabList.onclick = () => setTab(true);
+
+// шестерёнка: показать/скрыть блок настроек
+const gearBtn = document.getElementById("gear");
+const settingEl = document.getElementById("setting");
+gearBtn.onclick = () => {
+  const open = settingEl.classList.toggle("hidden") === false;
+  gearBtn.classList.toggle("on", open);
+};
 
 // --- Подборки (декi) ---
 const decksBar = document.getElementById("decks");
