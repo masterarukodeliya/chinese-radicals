@@ -289,13 +289,15 @@ function show(){
 function ttsHz(id){
   if("speechSynthesis" in window){
     const u = new SpeechSynthesisUtterance(byId[id].hz);
-    u.lang = "zh-CN"; u.rate = 0.85;
+    u.lang = "zh-CN"; u.rate = 0.7;
     speechSynthesis.cancel(); speechSynthesis.speak(u);
   }
 }
 function playAudio(id){
   if(deck.audioDir){
     const a = new Audio(deck.audioDir + id + ".mp3?v=" + AUDIO_VER);
+    a.playbackRate = 0.8;           // помедленнее, тон сохраняется
+    a.preservesPitch = true;
     a.play().catch(() => ttsHz(id));
   } else ttsHz(id);
 }
