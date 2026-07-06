@@ -68,11 +68,13 @@
     font-weight:600;color:#0f1115;cursor:pointer}
   .no{background:var(--no)} .ok{background:var(--ok)}
   .btns.hidden{visibility:hidden}
-  .navbtns{display:flex;gap:12px;width:100%;max-width:380px;margin-top:10px}
-  .navbtns button{flex:1;padding:10px 0;border:1px solid var(--line);border-radius:12px;
-    font-size:14px;font-weight:600;color:var(--ink);background:var(--card2);cursor:pointer}
-  .navbtns button:disabled{opacity:.35;cursor:default}
-  .navbtns.hidden{display:none}
+  .navarrow{position:fixed;top:50%;transform:translateY(-50%);z-index:50;
+    width:42px;height:66px;border:none;border-radius:12px;
+    background:rgba(35,41,54,.72);color:var(--ink);font-size:28px;line-height:1;cursor:pointer;
+    display:flex;align-items:center;justify-content:center}
+  .navarrow:disabled{opacity:.22;cursor:default}
+  #bprev{left:4px} #bnext{right:4px}
+  .navbtns.hidden .navarrow, .navbtns.hidden{display:none}
   .done{text-align:center;margin-top:40px;color:var(--dim);max-width:340px}
   .done b{color:var(--ink)}
   .reset{margin-top:0;background:none;color:var(--dim);border:1px solid var(--line);
@@ -140,8 +142,8 @@
   </div>
 
   <div class="navbtns hidden" id="navbtns">
-    <button id="bprev">← Назад</button>
-    <button id="bnext">Вперёд →</button>
+    <button class="navarrow" id="bprev" aria-label="Назад">‹</button>
+    <button class="navarrow" id="bnext" aria-label="Вперёд">›</button>
   </div>
 
   <div id="done" class="done hidden">
@@ -491,7 +493,8 @@ function setTab(list){
   tabTrain.classList.toggle("on", !list);
   listScreen.style.display = list ? "block" : "none";
   trainScreen.style.display = list ? "none" : "flex";
-  if(list) renderList(); else { buildQueue(); show(); }
+  if(list){ navbtns.classList.add("hidden"); renderList(); }
+  else { buildQueue(); show(); }
 }
 tabTrain.onclick = () => setTab(false);
 tabList.onclick = () => setTab(true);
