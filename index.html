@@ -853,7 +853,7 @@ const extraScreen = document.getElementById("extraScreen");
 const extraListEl = document.getElementById("extraList");
 function renderExtra(){
   let html = "";
-  DATA.filter(d => d.level === 3).sort((a, b) => a.kn - b.kn).forEach((d) => {
+  DATA.filter(d => d.level === 3).sort((a, b) => a.py.localeCompare(b.py, "en") || a.kn - b.kn).forEach((d) => {
     const i = d.id;
     const added = !!prog[i];
     html += '<div class="row">' +
