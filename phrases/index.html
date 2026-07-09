@@ -87,6 +87,10 @@
   .rmean{font-size:14px;color:var(--ink);margin-top:2px}
   .rspeak{border:1px solid var(--line);background:var(--card2);color:var(--ink);border-radius:8px;
     padding:7px 11px;font-size:14px;cursor:pointer;flex:none}
+  .rdel{border:1px solid var(--line);background:none;color:var(--no);border-radius:8px;
+    padding:7px 10px;font-size:14px;cursor:pointer;flex:none;margin-left:6px}
+  .dlgfull{margin:0 auto 8px;padding:8px 16px;border-radius:12px;border:1px solid var(--accent);
+    background:none;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer}
   .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;color:#0f1115;margin-left:6px}
   .b-new{background:var(--new)} .b-learn{background:var(--no)} .b-done{background:var(--ok)}
   .empty{color:var(--dim);font-size:14px;text-align:center;margin-top:30px;max-width:340px}
@@ -103,6 +107,8 @@
   <button class="tab on" id="tabTrain">Тренировка</button>
   <button class="tab" id="tabList">Все фразы</button>
 </div>
+
+<button class="dlgfull hidden" id="dlgFull">▶ Послушать диалог целиком</button>
 
 <div id="trainScreen">
   <div class="bar">
@@ -273,6 +279,27 @@ const DECKS = [
     {"id": 7, "hz": "我很好！我们准备好了。", "py": "wǒ hěn hǎo! wǒmen zhǔnbèi hǎo le", "mean": "Турист А: У меня всё хорошо! Мы готовы."}
   ]}
 ];
+// Редактируемая подборка «Слова» — хранится в localStorage, слова можно удалять
+const WORDS_KEY = "phrases_words_list_v1";
+const WORDS_SEED = [
+  {"id":0,"hz":"叫","py":"jiào","mean":"зваться, звать"},
+  {"id":1,"hz":"对不起","py":"duìbuqǐ","mean":"извините"},
+  {"id":2,"hz":"没关系","py":"méi guānxi","mean":"ничего страшного"},
+  {"id":3,"hz":"高兴","py":"gāoxìng","mean":"радостный, рад"},
+  {"id":4,"hz":"见到","py":"jiàndào","mean":"увидеть, встретить"},
+  {"id":5,"hz":"来","py":"lái","mean":"приходить, прибывать"},
+  {"id":6,"hz":"晚","py":"wǎn","mean":"поздно"},
+  {"id":7,"hz":"了","py":"le","mean":"частица (завершённость / изменение)"},
+  {"id":8,"hz":"准备","py":"zhǔnbèi","mean":"готовить(ся)"},
+  {"id":9,"hz":"准备好","py":"zhǔnbèi hǎo","mean":"быть готовым"}
+];
+function loadWords(){
+  try{ const w = JSON.parse(localStorage.getItem(WORDS_KEY)); if(Array.isArray(w)) return w; }catch(e){}
+  return WORDS_SEED.slice();
+}
+function saveWords(){ localStorage.setItem(WORDS_KEY, JSON.stringify(DECKS.find(d=>d.id==="words").data)); }
+DECKS.push({ id:"words", name:"Слова 词", key:"phrases_words_v1", audioDir:null, editable:true, data: loadWords() });
+
 let deckId = localStorage.getItem("phrases_deck") || "phrases";
 if(!DECKS.some(d => d.id === deckId)) deckId = "phrases";
 let deck = DECKS.find(d => d.id === deckId);
@@ -483,11 +510,25 @@ function renderList(){
         '<div class="rmean">' + d.mean + '</div>' +
       '</div>' +
       '<button class="rspeak" data-say="' + d.id + '">🔊</button>' +
+      (deck.editable ? '<button class="rdel" data-del="' + d.id + '" title="Удалить">✕</button>' : '') +
     '</div>';
   });
   listScreen.innerHTML = html;
 }
 listScreen.addEventListener("click", (e) => {
+  const del = e.target.getAttribute("data-del");
+  if(del !== null){
+    const id = +del;
+    const w = deck.data.find(x => x.id === id);
+    if(w && confirm('Удалить «' + w.hz + '»?')){
+      deck.data = deck.data.filter(x => x.id !== id);
+      saveWords();
+      delete prog[id]; save();
+      DATA = deck.data; buildById();
+      buildQueue(); renderList(); refreshStats();
+    }
+    return;
+  }
   const s = e.target.getAttribute("data-say");
   if(s !== null) playAudio(+s);
 });
@@ -528,7 +569,16 @@ function renderDecks(){
     b.onclick = () => switchDeck(d.id);
     decksBar.appendChild(b);
   });
+  updateDlgFull();
 }
+// кнопка «весь диалог» — только в подборке «Диалог»
+const dlgFullBtn = document.getElementById("dlgFull");
+let dlgAudio = null;
+function updateDlgFull(){ dlgFullBtn.classList.toggle("hidden", deckId !== "dlg"); }
+dlgFullBtn.onclick = () => {
+  if(!dlgAudio) dlgAudio = new Audio("audio-dlg-full.mp3?v=" + AUDIO_VER);
+  dlgAudio.currentTime = 0; dlgAudio.play();
+};
 function switchDeck(id){
   if(id === deckId) return;
   deckId = id; localStorage.setItem("phrases_deck", id);
