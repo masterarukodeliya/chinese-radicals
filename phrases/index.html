@@ -89,6 +89,14 @@
     padding:7px 11px;font-size:14px;cursor:pointer;flex:none}
   .rdel{border:1px solid var(--line);background:none;color:var(--no);border-radius:8px;
     padding:7px 10px;font-size:14px;cursor:pointer;flex:none;margin-left:6px}
+  .radd{border:1px solid var(--accent);background:none;color:var(--accent);border-radius:8px;
+    padding:7px 11px;font-size:14px;cursor:pointer;flex:none;margin-left:6px}
+  .radd:disabled{opacity:.55;border-color:var(--line);color:var(--dim);cursor:default}
+  .addform{display:flex;flex-wrap:wrap;gap:8px;padding:10px 0 14px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .addform .wi{flex:1;min-width:90px;background:var(--card2);color:var(--ink);border:1px solid var(--line);
+    border-radius:8px;padding:8px 10px;font-size:14px}
+  .addform .wadd{border:none;border-radius:10px;background:var(--ok);color:#0f1115;
+    padding:8px 16px;font-size:14px;font-weight:600;cursor:pointer;flex:none}
   .dlgfull{margin:0 auto 8px;padding:8px 16px;border-radius:12px;border:1px solid var(--accent);
     background:none;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer}
   .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;color:#0f1115;margin-left:6px}
@@ -499,9 +507,32 @@ function statusBadge(id){
   if((prog[id].box||0) >= 4) return '<span class="badge b-done">выучена</span>';
   return '<span class="badge b-learn">учится</span>';
 }
+// добавить слово в подборку «Слова»; возвращает true если добавлено, false если дубль
+function addWord(hz, py, mean){
+  const wd = DECKS.find(d => d.id === "words");
+  if(wd.data.some(x => x.hz === hz)) return false;
+  const nid = wd.data.reduce((m, x) => Math.max(m, x.id), -1) + 1;
+  wd.data.push({ id: nid, hz: hz, py: py, mean: mean });
+  saveWords();
+  return true;
+}
 function renderList(){
-  if(DATA.length === 0){ listScreen.innerHTML = '<p class="empty">Фраз пока нет. Пришли список — добавлю.</p>'; return; }
   let html = "";
+  if(deck.editable){
+    html += '<div class="addform">' +
+      '<input id="wHz" class="wi" placeholder="иероглиф(ы)">' +
+      '<input id="wPy" class="wi" placeholder="пиньинь">' +
+      '<input id="wMean" class="wi" placeholder="перевод">' +
+      '<button class="wadd" id="wAdd">Добавить слово</button>' +
+    '</div>';
+  }
+  if(DATA.length === 0){
+    html += '<p class="empty">' + (deck.editable
+      ? 'Список пуст. Добавь слово выше или кнопкой «＋» у слов в других подборках.'
+      : 'Фраз пока нет.') + '</p>';
+    listScreen.innerHTML = html;
+    return;
+  }
   DATA.forEach(d => {
     html += '<div class="row">' +
       '<div class="rinfo">' +
@@ -510,12 +541,35 @@ function renderList(){
         '<div class="rmean">' + d.mean + '</div>' +
       '</div>' +
       '<button class="rspeak" data-say="' + d.id + '">🔊</button>' +
-      (deck.editable ? '<button class="rdel" data-del="' + d.id + '" title="Удалить">✕</button>' : '') +
+      (deck.editable
+        ? '<button class="rdel" data-del="' + d.id + '" title="Удалить">✕</button>'
+        : '<button class="radd" data-addword="' + d.id + '" title="В «Слова»">＋</button>') +
     '</div>';
   });
   listScreen.innerHTML = html;
 }
 listScreen.addEventListener("click", (e) => {
+  // добавить слово из формы (папка «Слова»)
+  if(e.target.id === "wAdd"){
+    const hz = document.getElementById("wHz").value.trim();
+    const py = document.getElementById("wPy").value.trim();
+    const mean = document.getElementById("wMean").value.trim();
+    if(!hz){ alert("Впиши иероглиф(ы)"); return; }
+    if(addWord(hz, py, mean)){ DATA = deck.data; buildById(); buildQueue(); renderList(); refreshStats(); }
+    else alert("Такое слово уже есть");
+    return;
+  }
+  // добавить существующее слово/фразу из другой подборки в «Слова»
+  const aw = e.target.getAttribute("data-addword");
+  if(aw !== null){
+    const d = byId[+aw];
+    if(d){
+      const ok = addWord(d.hz, d.py, d.mean);
+      e.target.textContent = ok ? "✓" : "уже есть";
+      e.target.disabled = true;
+    }
+    return;
+  }
   const del = e.target.getAttribute("data-del");
   if(del !== null){
     const id = +del;
