@@ -24,19 +24,24 @@
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
-    background:var(--bg);color:var(--ink);min-height:100vh;
-    display:flex;flex-direction:column;align-items:center;padding:16px 14px 40px}
-  h1{font-size:18px;font-weight:600;margin:4px 0 2px;letter-spacing:.2px}
-  .sub{color:var(--dim);font-size:13px;margin-bottom:14px;text-align:center}
+    background:var(--bg);color:var(--ink);height:100vh;height:100dvh;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;padding:8px 14px 10px}
+  h1{font-size:16px;font-weight:600;margin:0 0 6px;letter-spacing:.2px;text-align:center}
+  .sub{display:none}
+  #trainScreen{display:flex;flex-direction:column;align-items:center;flex:1;min-height:0;width:100%;max-width:360px}
+  #searchScreen,#listScreen,#extraScreen,#groupsScreen{flex:1 1 auto;min-height:0;overflow-y:auto}
+  .gear{border:1px solid var(--line);background:var(--card2);color:var(--ink);border-radius:8px;
+    padding:3px 9px;font-size:14px;line-height:1;cursor:pointer}
+  .gear.on{border-color:var(--accent)}
   .install{display:none;margin:0 auto 14px;padding:9px 18px;border-radius:12px;border:1px solid var(--accent);
     background:var(--accent);color:#0f1115;font-size:14px;font-weight:700;cursor:pointer}
   .install.show{display:block}
   .install.ios{background:none;color:var(--accent);font-weight:600;font-size:13px;cursor:default}
-  .tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;justify-content:center}
+  .tabs{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;justify-content:center}
   .tab{padding:8px 16px;border-radius:10px;border:1px solid var(--line);background:none;
     color:var(--dim);font-size:14px;font-weight:600;cursor:pointer}
   .tab.on{background:var(--card2);color:var(--ink)}
-  .bar{display:flex;gap:14px;font-size:13px;color:var(--dim);margin-bottom:10px;flex-wrap:wrap;justify-content:center}
+  .bar{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--dim);margin-bottom:8px;flex-wrap:wrap;justify-content:center}
   .bar b{color:var(--ink)}
   .setting{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim);margin-bottom:14px}
   .setting input[type=number]{width:60px;background:var(--card2);color:var(--ink);border:1px solid var(--line);
@@ -50,10 +55,10 @@
   .cardtag.rep{background:var(--no)}   /* повтор */
   .cardtag.new{background:var(--new)}  /* новый */
   .cardtag.old{background:var(--line);color:var(--dim)} /* просмотр истории */
-  .card{position:relative;width:100%;max-width:360px;aspect-ratio:3/4;background:var(--card);
-    border:1px solid var(--line);border-radius:20px;cursor:pointer;
+  .card{position:relative;width:100%;max-width:360px;flex:1 1 auto;min-height:150px;background:var(--card);
+    border:1px solid var(--line);border-radius:20px;cursor:pointer;overflow-y:auto;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    padding:22px;text-align:center;user-select:none;transition:background .15s}
+    padding:20px;text-align:center;user-select:none;transition:background .15s}
   .card:active{background:var(--card2)}
   .glyph{font-size:104px;line-height:1;margin:2px 0 10px;font-family:var(--hanzi)}
   .hint{color:var(--dim);font-size:13px}
@@ -91,7 +96,7 @@
   .navbtns.hidden .navarrow, .navbtns.hidden{display:none}
   .done{text-align:center;margin-top:40px;color:var(--dim);max-width:340px}
   .done b{color:var(--ink)}
-  .reset{margin-top:24px;background:none;color:var(--dim);border:1px solid var(--line);
+  .reset{margin-top:10px;background:none;color:var(--dim);border:1px solid var(--line);
     border-radius:10px;padding:8px 14px;font-size:12px;font-weight:500;cursor:pointer}
   /* --- Список --- */
   #listScreen{width:100%;max-width:440px;display:none}
@@ -107,7 +112,7 @@
   .rvar{color:var(--accent);font-size:13px;margin-left:4px}
   .lvhead{font-size:14px;font-weight:700;color:var(--ink);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
   .searchbox{width:100%;max-width:440px;background:var(--card2);color:var(--ink);border:1px solid var(--line);
-    border-radius:10px;padding:9px 12px;font-size:14px;margin-bottom:12px}
+    border-radius:10px;padding:8px 12px;font-size:14px;margin-bottom:8px}
   .searchbox:focus{outline:none;border-color:var(--accent)}
   #searchScreen{width:100%;max-width:440px;display:none}
   .sempty{color:var(--dim);font-size:14px;text-align:center;margin-top:20px}
@@ -199,7 +204,9 @@
       <span>В очереди: <b id="due">0</b></span>
       <span>Изучается: <b id="learning">0</b></span>
       <span>Освоено: <b id="learned">0</b>/<b id="total">0</b></span>
+      <button class="gear" id="gear" title="Настройки">⚙</button>
     </div>
+    <div id="srsPanel" class="hidden">
     <div class="setting">
       Новых за сессию:
       <input type="number" id="perday" min="1" max="100" step="1">
@@ -211,6 +218,8 @@
       <button data-tsort="py">Пиньинь</button>
       <button data-tsort="status">Статус</button>
       <button data-tsort="shuffle">🔀 Случайно</button>
+    </div>
+    <button class="reset" id="reset">Сбросить весь прогресс</button>
     </div>
   </div>
   <div id="drillBar" class="drillbar hidden">
@@ -257,8 +266,6 @@
       <button id="drillBack">К подборкам</button>
     </div>
   </div>
-
-  <button class="reset" id="reset">Сбросить весь прогресс</button>
 </div>
 
 <!-- ЭКРАН СПИСКА -->
@@ -979,7 +986,7 @@ function startDrill(group){
   drill = { name: group.name, ids: group.ids.slice(), queue: shuffleArr(group.ids.slice()), total: group.ids.length };
   // показываем экран тренировки в режиме дрилла, без SRS-настроек
   [tabTrain, tabL1, tabL2, tabExtra, tabGroups].forEach(t => t.classList.remove("on"));
-  trainScreen.style.display = "block";
+  trainScreen.style.display = "flex";
   listScreen.style.display = "none";
   document.getElementById("listSort").style.display = "none";
   selBar.classList.add("hidden");
@@ -1050,7 +1057,7 @@ function setTab(name){
   tabExtra.classList.toggle("on", name === "extra");
   tabGroups.classList.toggle("on", name === "groups");
   const isList = name === "l1" || name === "l2";
-  trainScreen.style.display = name === "train" ? "block" : "none";
+  trainScreen.style.display = name === "train" ? "flex" : "none";
   listScreen.style.display = isList ? "block" : "none";
   document.getElementById("listSort").style.display = isList ? "flex" : "none";
   extraScreen.style.display = name === "extra" ? "block" : "none";
@@ -1066,6 +1073,14 @@ tabL1.onclick = () => { leaveDrill(); clearSearch(); setTab("l1"); };
 tabL2.onclick = () => { leaveDrill(); clearSearch(); setTab("l2"); };
 tabExtra.onclick = () => { leaveDrill(); clearSearch(); setTab("extra"); };
 tabGroups.onclick = () => { leaveDrill(); clearSearch(); setTab("groups"); };
+
+// шестерёнка: показать/скрыть настройки (Новых за сессию / повторы / Порядок / сброс)
+const gearBtn = document.getElementById("gear");
+const srsPanel = document.getElementById("srsPanel");
+gearBtn.onclick = () => {
+  const open = srsPanel.classList.toggle("hidden") === false;
+  gearBtn.classList.toggle("on", open);
+};
 
 // --- Поиск (по пиньиню без тонов, переводу и знаку; по всем уровням) ---
 const ALT = {}; // второе чтение теперь в подписи py

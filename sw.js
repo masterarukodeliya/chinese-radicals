@@ -1,5 +1,5 @@
 // Service worker тренажёра ключей — офлайн-кэш и установка (PWA)
-const CACHE = 'radicals-v1';
+const CACHE = 'radicals-v2';
 const SHELL = [
   './',
   'index.html',
