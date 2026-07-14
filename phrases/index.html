@@ -26,10 +26,17 @@
   .tab{padding:8px 16px;border-radius:10px;border:1px solid var(--line);background:none;
     color:var(--dim);font-size:14px;font-weight:600;cursor:pointer}
   .tab.on{background:var(--card2);color:var(--ink)}
-  .decks{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;justify-content:center}
-  .deck{padding:7px 15px;border-radius:20px;border:1px solid var(--line);background:none;
+  .decks{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+  .deck-wrap{display:inline-flex;align-items:stretch;border-radius:20px;border:1px solid var(--line)}
+  .deck-wrap.on{border-color:var(--accent)}
+  .deck{padding:7px 6px 7px 14px;border:none;border-radius:20px 0 0 20px;background:none;
     color:var(--dim);font-size:13px;font-weight:600;cursor:pointer}
-  .deck.on{background:var(--accent);border-color:var(--accent);color:#0f1115}
+  .deck-wrap.on .deck{background:var(--accent);color:#0f1115}
+  .deckx{padding:7px 10px;border:none;border-left:1px solid var(--line);border-radius:0 20px 20px 0;
+    background:none;color:var(--dim);font-size:13px;cursor:pointer;line-height:1}
+  .deck-wrap.on .deckx{background:var(--accent);border-left-color:rgba(15,17,21,.2);color:rgba(15,17,21,.45)}
+  .deckx:hover{color:var(--no)!important}
+  .restore-decks{border:none;background:none;color:var(--dim);font-size:12px;cursor:pointer;text-decoration:underline;padding:2px 4px}
   .bar{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--dim);margin-bottom:8px;flex-wrap:wrap;justify-content:center}
   .bar b{color:var(--ink)}
   .gear{border:1px solid var(--line);background:var(--card2);color:var(--ink);border-radius:8px;
@@ -334,10 +341,23 @@ function loadWords(){
 function saveWords(){ localStorage.setItem(WORDS_KEY, JSON.stringify(DECKS.find(d=>d.id==="words").data)); }
 DECKS.push({ id:"words", name:"Слова 词", key:"phrases_words_v1", audioDir:null, editable:true, data: loadWords() });
 
+// --- Удалённые фразы (встроенные подборки) ---
+const DEL_PFX = "phrases_del_";
+function loadDeleted(id){ try{ return new Set(JSON.parse(localStorage.getItem(DEL_PFX+id)||"[]")); }catch(e){ return new Set(); } }
+function saveDeleted(id, s){ localStorage.setItem(DEL_PFX+id, JSON.stringify([...s])); }
+function getActiveData(d){ if(d.editable) return d.data; const s=loadDeleted(d.id); return s.size ? d.data.filter(x=>!s.has(x.id)) : d.data; }
+
+// --- Скрытые подборки ---
+const HIDDEN_KEY = "phrases_hidden_decks";
+function loadHiddenDecks(){ try{ return new Set(JSON.parse(localStorage.getItem(HIDDEN_KEY)||"[]")); }catch(e){ return new Set(); } }
+function saveHiddenDecks(s){ localStorage.setItem(HIDDEN_KEY, JSON.stringify([...s])); }
+let hiddenDecks = loadHiddenDecks();
+function visibleDecks(){ return DECKS.filter(d => !hiddenDecks.has(d.id)); }
+
 let deckId = localStorage.getItem("phrases_deck") || "phrases";
-if(!DECKS.some(d => d.id === deckId)) deckId = "phrases";
+if(!DECKS.some(d => d.id === deckId && !hiddenDecks.has(d.id))) deckId = visibleDecks()[0]?.id || "phrases";
 let deck = DECKS.find(d => d.id === deckId);
-let DATA = deck.data;
+let DATA = getActiveData(deck);
 let byId = {};
 function buildById(){ byId = {}; DATA.forEach(d => byId[d.id] = d); }
 buildById();
@@ -569,7 +589,8 @@ function renderList(){
       '<button class="rspeak" data-say="' + d.id + '">🔊</button>' +
       (deck.editable
         ? '<button class="rdel" data-del="' + d.id + '" title="Удалить">✕</button>'
-        : '<button class="radd" data-addword="' + d.id + '" title="В «Слова»">＋</button>') +
+        : '<button class="radd" data-addword="' + d.id + '" title="В «Слова»">＋</button>' +
+          '<button class="rdel" data-hidephrase="' + d.id + '" title="Убрать из подборки">✕</button>') +
     '</div>';
   });
   listScreen.innerHTML = html;
@@ -604,7 +625,19 @@ listScreen.addEventListener("click", (e) => {
       deck.data = deck.data.filter(x => x.id !== id);
       saveWords();
       delete prog[id]; save();
-      DATA = deck.data; buildById();
+      DATA = getActiveData(deck); buildById();
+      buildQueue(); renderList(); refreshStats();
+    }
+    return;
+  }
+  const hp = e.target.getAttribute("data-hidephrase");
+  if(hp !== null){
+    const id = +hp;
+    const w = DATA.find(x => x.id === id);
+    if(w && confirm('Убрать «' + w.hz + '» из этой подборки?')){
+      const s = loadDeleted(deck.id); s.add(id); saveDeleted(deck.id, s);
+      delete prog[id]; save();
+      DATA = getActiveData(deck); buildById();
       buildQueue(); renderList(); refreshStats();
     }
     return;
@@ -638,17 +671,41 @@ gearBtn.onclick = () => {
   gearBtn.classList.toggle("on", open);
 };
 
-// --- Подборки (декi) ---
+// --- Подборки ---
 const decksBar = document.getElementById("decks");
+function deleteDeck(id){
+  const d = DECKS.find(x=>x.id===id);
+  if(!confirm('Скрыть подборку «' + d.name + '»?')) return;
+  hiddenDecks.add(id); saveHiddenDecks(hiddenDecks);
+  if(deckId === id){
+    const first = visibleDecks().find(x=>x.id!==id);
+    if(first) switchDeck(first.id); else renderDecks();
+  } else renderDecks();
+}
 function renderDecks(){
   decksBar.innerHTML = "";
-  DECKS.forEach(d => {
+  visibleDecks().forEach(d => {
+    const wrap = document.createElement("span");
+    wrap.className = "deck-wrap" + (d.id===deckId?" on":"");
     const b = document.createElement("button");
-    b.className = "deck" + (d.id === deckId ? " on" : "");
+    b.className = "deck";
     b.textContent = d.name;
     b.onclick = () => switchDeck(d.id);
-    decksBar.appendChild(b);
+    const x = document.createElement("button");
+    x.className = "deckx";
+    x.textContent = "×";
+    x.title = "Скрыть подборку";
+    x.onclick = (e) => { e.stopPropagation(); deleteDeck(d.id); };
+    wrap.appendChild(b); wrap.appendChild(x);
+    decksBar.appendChild(wrap);
   });
+  if(hiddenDecks.size){
+    const r = document.createElement("button");
+    r.className = "restore-decks";
+    r.textContent = "↺ восстановить";
+    r.onclick = () => { hiddenDecks.clear(); saveHiddenDecks(hiddenDecks); renderDecks(); };
+    decksBar.appendChild(r);
+  }
   updateDlgFull();
 }
 // кнопка «весь диалог» — только в подборке «Диалог»
@@ -663,7 +720,7 @@ function switchDeck(id){
   if(id === deckId) return;
   deckId = id; localStorage.setItem("phrases_deck", id);
   deck = DECKS.find(d => d.id === id);
-  DATA = deck.data; buildById();
+  DATA = getActiveData(deck); buildById();
   KEY = deck.key;
   prog = JSON.parse(localStorage.getItem(KEY) || "{}");
   sessionNew = 0;
