@@ -50,8 +50,9 @@
   .toggle{border:1px solid var(--line);background:var(--card2);color:var(--dim);
     border-radius:8px;padding:5px 10px;font-size:13px;font-weight:600;cursor:pointer}
   .toggle.on{border-color:var(--accent);color:var(--accent)}
-  .cardtag{position:absolute;top:12px;right:14px;font-size:12px;font-weight:700;
-    padding:3px 10px;border-radius:8px;color:#0f1115;display:none}
+  .cardtag{font-size:12px;font-weight:700;
+    padding:3px 10px;border-radius:8px;color:#0f1115;display:none;
+    align-self:flex-end;margin-bottom:4px}
   .cardtag.show{display:block}
   .cardtag.rep{background:var(--no)} .cardtag.new{background:var(--new)}
   .cardtag.old{background:var(--dim)}
@@ -141,8 +142,8 @@
     <button class="reset" id="reset">Сбросить прогресс</button>
   </div>
 
+  <div class="cardtag" id="cardtag"></div>
   <div id="card" class="card">
-    <div class="cardtag" id="cardtag"></div>
     <div class="front">
       <div class="hz" id="fhz">一杯茶</div>
       <div class="py" id="fpy"></div>
