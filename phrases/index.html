@@ -26,7 +26,11 @@
   .tab{padding:8px 16px;border-radius:10px;border:1px solid var(--line);background:none;
     color:var(--dim);font-size:14px;font-weight:600;cursor:pointer}
   .tab.on{background:var(--card2);color:var(--ink)}
-  .decks{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+  .decks-toggle{border:1px solid var(--line);background:var(--card2);color:var(--ink);
+    border-radius:20px;padding:7px 16px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:6px}
+  .decks-toggle.on{border-color:var(--accent);color:var(--accent)}
+  .decks{display:none;gap:8px;margin-bottom:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+  .decks.open{display:flex}
   .deck-wrap{display:inline-flex;align-items:stretch;border-radius:20px;border:1px solid var(--line)}
   .deck-wrap.on{border-color:var(--accent)}
   .deck{padding:7px 6px 7px 14px;border:none;border-radius:20px 0 0 20px;background:none;
@@ -117,6 +121,7 @@
 <h1>Китайские фразы</h1>
 <div class="sub">фраза · пиньинь · перевод · озвучка · интервальное повторение</div>
 
+<button id="decksToggle" class="decks-toggle"></button>
 <div class="decks" id="decks"></div>
 
 <div class="tabs">
@@ -729,6 +734,17 @@ gearBtn.onclick = () => {
 
 // --- Подборки ---
 const decksBar = document.getElementById("decks");
+const decksToggle = document.getElementById("decksToggle");
+function updateDecksToggle(){
+  const d = DECKS.find(x=>x.id===deckId);
+  decksToggle.textContent = (d ? d.name : "Подборки") + " ▾";
+  decksToggle.classList.remove("on");
+  decksBar.classList.remove("open");
+}
+decksToggle.onclick = () => {
+  const open = decksBar.classList.toggle("open");
+  decksToggle.classList.toggle("on", open);
+};
 function deleteDeck(id){
   const d = DECKS.find(x=>x.id===id);
   if(!confirm('Скрыть подборку «' + d.name + '»?')) return;
@@ -763,6 +779,7 @@ function renderDecks(){
     decksBar.appendChild(r);
   }
   updateDlgFull();
+  updateDecksToggle();
 }
 // кнопка «весь диалог» — только в подборке «Диалог»
 const dlgFullBtn = document.getElementById("dlgFull");
@@ -773,7 +790,7 @@ dlgFullBtn.onclick = () => {
   dlgAudio.currentTime = 0; dlgAudio.play();
 };
 function switchDeck(id){
-  if(id === deckId) return;
+  if(id === deckId){ decksBar.classList.remove("open"); decksToggle.classList.remove("on"); return; }
   deckId = id; localStorage.setItem("phrases_deck", id);
   deck = DECKS.find(d => d.id === id);
   DATA = getActiveData(deck); buildById();
