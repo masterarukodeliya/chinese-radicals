@@ -514,7 +514,7 @@ function renderCard(id){
   // пиньинь: на лице или на обороте
   const fpy = document.getElementById("fpy"), bpy = document.getElementById("bpy");
   if(pyOnBack){ fpy.textContent = ""; fpy.classList.add("hidden"); bpy.textContent = d.py; bpy.classList.remove("hidden"); }
-  else { fpy.textContent = d.py; fpy.classList.remove("hidden"); bpy.textContent = ""; bpy.classList.add("hidden"); }
+  else { fpy.textContent = d.py; fpy.classList.remove("hidden"); bpy.textContent = d.py; bpy.classList.remove("hidden"); }
   updateNav();
   refreshStats();
 }
