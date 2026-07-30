@@ -75,6 +75,9 @@
   .speak{margin-top:12px;background:var(--card2);color:var(--ink);border:1px solid var(--line);
     border-radius:12px;padding:9px 18px;font-size:15px;font-weight:600;cursor:pointer}
   .speak:active{background:var(--line)}
+  .copy{margin-top:8px;background:none;color:var(--dim);border:1px solid var(--line);
+    border-radius:12px;padding:6px 14px;font-size:13px;cursor:pointer}
+  .copy:active{background:var(--line)}
   .btns{display:flex;gap:12px;width:100%;max-width:380px;margin-top:16px}
   .btns button{flex:1;padding:15px 0;border:none;border-radius:14px;font-size:15px;
     font-weight:600;color:#0f1115;cursor:pointer}
@@ -153,6 +156,7 @@
       <div class="hz" id="fhz">一杯茶</div>
       <div class="py" id="fpy"></div>
       <button class="speak" id="fspeak" title="Послушать">🔊 Послушать</button>
+      <button class="copy" id="fcopy">Копировать</button>
       <div class="hint">нажми, чтобы проверить</div>
     </div>
     <div class="back">
@@ -160,6 +164,7 @@
       <div class="py" id="bpy"></div>
       <div class="mean" id="bmean"></div>
       <button class="speak" id="bspeak" title="Послушать">🔊 Послушать</button>
+      <button class="copy" id="bcopy">Копировать</button>
     </div>
   </div>
 
@@ -556,6 +561,16 @@ function speak(){
 }
 document.getElementById("fspeak").onclick = (e) => { e.stopPropagation(); speak(); };
 document.getElementById("bspeak").onclick = (e) => { e.stopPropagation(); speak(); };
+function copyHz(btn) {
+  const text = document.getElementById("fhz").textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = "Скопировано ✓";
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  });
+}
+document.getElementById("fcopy").onclick = (e) => { e.stopPropagation(); copyHz(e.currentTarget); };
+document.getElementById("bcopy").onclick = (e) => { e.stopPropagation(); copyHz(e.currentTarget); };
 
 card.onclick = () => {
   if(cur === null) return;
