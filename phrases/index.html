@@ -64,7 +64,7 @@
   .card{position:relative;width:100%;max-width:380px;flex:1 1 auto;min-height:150px;background:var(--card);
     border:1px solid var(--line);border-radius:20px;cursor:pointer;overflow:hidden;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    padding:24px 22px;text-align:center;user-select:none}
+    padding:24px 22px;text-align:center}
   .hz{font-size:46px;line-height:1.3;margin-bottom:14px;font-family:var(--hanzi)}
   .py{font-size:21px;color:var(--accent);margin-bottom:10px}
   .mean{font-size:20px;margin-bottom:8px}
@@ -75,9 +75,7 @@
   .speak{margin-top:12px;background:var(--card2);color:var(--ink);border:1px solid var(--line);
     border-radius:12px;padding:9px 18px;font-size:15px;font-weight:600;cursor:pointer}
   .speak:active{background:var(--line)}
-  .copy{margin-top:8px;background:none;color:var(--dim);border:1px solid var(--line);
-    border-radius:12px;padding:6px 14px;font-size:13px;cursor:pointer}
-  .copy:active{background:var(--line)}
+  .ftr{margin-top:8px;font-size:14px;color:var(--dim);font-style:italic}
   .btns{display:flex;gap:12px;width:100%;max-width:380px;margin-top:16px}
   .btns button{flex:1;padding:15px 0;border:none;border-radius:14px;font-size:15px;
     font-weight:600;color:#0f1115;cursor:pointer}
@@ -156,7 +154,7 @@
       <div class="hz" id="fhz">一杯茶</div>
       <div class="py" id="fpy"></div>
       <button class="speak" id="fspeak" title="Послушать">🔊 Послушать</button>
-      <button class="copy" id="fcopy">Копировать</button>
+      <div class="ftr" id="ftr"></div>
       <div class="hint">нажми, чтобы проверить</div>
     </div>
     <div class="back">
@@ -164,7 +162,6 @@
       <div class="py" id="bpy"></div>
       <div class="mean" id="bmean"></div>
       <button class="speak" id="bspeak" title="Послушать">🔊 Послушать</button>
-      <button class="copy" id="bcopy">Копировать</button>
     </div>
   </div>
 
@@ -403,10 +400,10 @@ const DECKS = [
     {"id":17,"hz":"他 不 要 走。","py":"tā bù yào zǒu","mean":"Он не хочет уходить."},
     {"id":18,"hz":"你 要 什么？","py":"nǐ yào shénme?","mean":"Что тебе нужно?"}
   ]},
-  { id:"test-xiaowang", name:"Тест: 李明/王芳", key:"phrases_test_limingwangfang_v2", audioDir:null, data:[
-    {"id":0,"hz":"王芳怎么介绍自己？","py":"Wáng Fāng zěnme jièshào zìjǐ?","mean":"我叫王芳。(Wǒ jiào Wáng Fāng.) — Меня зовут Ван Фан."},
-    {"id":1,"hz":"王芳姓什么？","py":"Wáng Fāng xìng shénme?","mean":"姓王。(xìng Wáng) — Фамилия Ван."},
-    {"id":2,"hz":"李明姓什么？","py":"Lǐ Míng xìng shénme?","mean":"姓李。(xìng Lǐ) — Фамилия Ли."}
+  { id:"test-xiaowang", name:"Тест: 李明/王芳", key:"phrases_test_limingwangfang_v3", audioDir:null, data:[
+    {"id":0,"hz":"王芳怎么介绍自己？","py":"Wáng Fāng zěnme jièshào zìjǐ?","tr":"Как Ван Фан представилась?","mean":"我叫王芳。(Wǒ jiào Wáng Fāng.) — Меня зовут Ван Фан."},
+    {"id":1,"hz":"王芳姓什么？","py":"Wáng Fāng xìng shénme?","tr":"Какая фамилия у Ван Фан?","mean":"姓王。(xìng Wáng) — Фамилия Ван."},
+    {"id":2,"hz":"李明姓什么？","py":"Lǐ Míng xìng shénme?","tr":"Какая фамилия у Ли Мина?","mean":"姓李。(xìng Lǐ) — Фамилия Ли."}
   ]}
 ];
 // Редактируемая подборка «Слова» — хранится в localStorage, слова можно удалять
@@ -518,6 +515,9 @@ function renderCard(id){
   document.getElementById("fhz").textContent = d.hz;
   document.getElementById("bhz").textContent = d.hz;
   document.getElementById("bmean").textContent = d.mean;
+  const ftr = document.getElementById("ftr");
+  ftr.textContent = d.tr || "";
+  ftr.classList.toggle("hidden", !d.tr);
   // пиньинь: на лице или на обороте
   const fpy = document.getElementById("fpy"), bpy = document.getElementById("bpy");
   if(pyOnBack){ fpy.textContent = ""; fpy.classList.add("hidden"); bpy.textContent = d.py; bpy.classList.remove("hidden"); }
@@ -561,16 +561,6 @@ function speak(){
 }
 document.getElementById("fspeak").onclick = (e) => { e.stopPropagation(); speak(); };
 document.getElementById("bspeak").onclick = (e) => { e.stopPropagation(); speak(); };
-function copyHz(btn) {
-  const text = document.getElementById("fhz").textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const orig = btn.textContent;
-    btn.textContent = "Скопировано ✓";
-    setTimeout(() => { btn.textContent = orig; }, 1500);
-  });
-}
-document.getElementById("fcopy").onclick = (e) => { e.stopPropagation(); copyHz(e.currentTarget); };
-document.getElementById("bcopy").onclick = (e) => { e.stopPropagation(); copyHz(e.currentTarget); };
 
 card.onclick = () => {
   if(cur === null) return;
