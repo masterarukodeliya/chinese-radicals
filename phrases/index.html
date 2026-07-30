@@ -320,13 +320,12 @@ const DECKS = [
     {"id":11,"hz":"老样子","py":"Lǎo yàng zi","mean":"По-старому"},
     {"id":12,"hz":"正常","py":"Zhèngcháng","mean":"Нормально, норм"}
   ]},
-  { id:"dlg", name:"Диалог 对话", key:"phrases_dlg_v2", audioDir:null, data:[
-    {"id": 0, "hz": "你好！我是小王，很高兴认识你。", "py": "Nǐ hǎo! Wǒ shì Xiǎo Wáng, hěn gāoxìng rènshi nǐ.", "mean": "小王: Привет! Я Сяо Ван, очень рад познакомиться."},
-    {"id": 1, "hz": "你好！我姓刘，你呢？", "py": "Nǐ hǎo! Wǒ xìng Liú, nǐ ne?", "mean": "小刘: Привет! Моя фамилия Лю, а ты?"},
-    {"id": 2, "hz": "我们都很好。", "py": "Wǒmen dōu hěn hǎo.", "mean": "Мы все хорошо."},
-    {"id": 3, "hz": "你家里都有谁？", "py": "Nǐ jiā lǐ dōu yǒu shuí?", "mean": "小王: Кто есть у тебя в семье?"},
-    {"id": 4, "hz": "爸爸、妈妈、儿子和女儿。", "py": "Bàba, māma, érzi hé nǚ'ér.", "mean": "小刘: Папа, мама, сын и дочь."},
-    {"id": 5, "hz": "我也很高兴认识你。", "py": "Wǒ yě hěn gāoxìng rènshi nǐ.", "mean": "小刘: Мне тоже очень приятно познакомиться."}
+  { id:"dlg", name:"Диалог 对话", key:"phrases_dlg_v3", audioDir:null, data:[
+    {"id": 0, "hz": "你好，我是李明，很高兴认识你。", "py": "Nǐ hǎo, wǒ shì Lǐ Míng, hěn gāoxìng rènshi nǐ.", "mean": "李明: Привет, я Ли Мин, очень рад познакомиться."},
+    {"id": 1, "hz": "你好，我叫王芳，也很高兴认识你。", "py": "Nǐ hǎo, wǒ jiào Wáng Fāng, yě hěn gāoxìng rènshi nǐ.", "mean": "王芳: Привет, меня зовут Ван Фан, мне тоже приятно познакомиться."},
+    {"id": 2, "hz": "你姓什么？", "py": "Nǐ xìng shénme?", "mean": "李明: Какая у тебя фамилия?"},
+    {"id": 3, "hz": "我姓王，你呢？", "py": "Wǒ xìng Wáng, nǐ ne?", "mean": "王芳: Моя фамилия Ван, а ты?"},
+    {"id": 4, "hz": "我姓李。", "py": "Wǒ xìng Lǐ.", "mean": "李明: Моя фамилия Ли."}
   ]},
   { id:"zaor", name:"绕口令 · Финики", key:"phrases_zaor_v1", audioDir:null, data:[
     {"id":0,"hz":"出东门，过大桥","py":"Chū dōng mén, guò dà qiáo","mean":"Выйди через восточные ворота, перейди большой мост"},
@@ -399,12 +398,10 @@ const DECKS = [
     {"id":17,"hz":"他 不 要 走。","py":"tā bù yào zǒu","mean":"Он не хочет уходить."},
     {"id":18,"hz":"你 要 什么？","py":"nǐ yào shénme?","mean":"Что тебе нужно?"}
   ]},
-  { id:"test-xiaowang", name:"Тест: 小王/小刘", key:"phrases_test_xiaowang_v1", audioDir:null, data:[
-    {"id":0,"hz":"小王说了什么？","py":"Xiǎo Wáng shuō le shénme?","mean":"你好！我是小王，很高兴认识你。\n(Nǐ hǎo! Wǒ shì Xiǎo Wáng, hěn gāoxìng rènshi nǐ.)"},
-    {"id":1,"hz":"小刘姓什么？","py":"Xiǎo Liú xìng shénme?","mean":"姓刘。(xìng Liú) — Фамилия Лю."},
-    {"id":2,"hz":"小刘家里都有谁？","py":"Xiǎo Liú jiā lǐ dōu yǒu shuí?","mean":"爸爸、妈妈、儿子、女儿。\n(bàba, māma, érzi, nǚ'ér)"},
-    {"id":3,"hz":"谁说了"我也很高兴认识你"？","py":"Shuí shuō le \"wǒ yě hěn gāoxìng rènshi nǐ\"?","mean":"小刘说的。(Xiǎo Liú shuō de)"},
-    {"id":4,"hz":"哪一句用了"都"？","py":"Nǎ yí jù yòng le \"dōu\"?","mean":"我们都很好。(Wǒmen dōu hěn hǎo.)"}
+  { id:"test-xiaowang", name:"Тест: 李明/王芳", key:"phrases_test_limingwangfang_v1", audioDir:null, data:[
+    {"id":0,"hz":"王芳怎么介绍自己？","py":"Wáng Fāng zěnme jièshào zìjǐ?","mean":"我叫王芳。(Wǒ jiào Wáng Fāng.)"},
+    {"id":1,"hz":"王芳姓什么？","py":"Wáng Fāng xìng shénme?","mean":"姓王。(xìng Wáng)"},
+    {"id":2,"hz":"李明姓什么？","py":"Lǐ Míng xìng shénme?","mean":"姓李。(xìng Lǐ)"}
   ]}
 ];
 // Редактируемая подборка «Слова» — хранится в localStorage, слова можно удалять
