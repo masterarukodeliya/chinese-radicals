@@ -75,7 +75,6 @@
   .speak{margin-top:12px;background:var(--card2);color:var(--ink);border:1px solid var(--line);
     border-radius:12px;padding:9px 18px;font-size:15px;font-weight:600;cursor:pointer}
   .speak:active{background:var(--line)}
-  .ftr{margin-top:8px;font-size:14px;color:var(--dim);font-style:italic}
   .btns{display:flex;gap:12px;width:100%;max-width:380px;margin-top:16px}
   .btns button{flex:1;padding:15px 0;border:none;border-radius:14px;font-size:15px;
     font-weight:600;color:#0f1115;cursor:pointer}
@@ -154,7 +153,6 @@
       <div class="hz" id="fhz">一杯茶</div>
       <div class="py" id="fpy"></div>
       <button class="speak" id="fspeak" title="Послушать">🔊 Послушать</button>
-      <div class="ftr" id="ftr"></div>
       <div class="hint">нажми, чтобы проверить</div>
     </div>
     <div class="back">
@@ -400,10 +398,13 @@ const DECKS = [
     {"id":17,"hz":"他 不 要 走。","py":"tā bù yào zǒu","mean":"Он не хочет уходить."},
     {"id":18,"hz":"你 要 什么？","py":"nǐ yào shénme?","mean":"Что тебе нужно?"}
   ]},
-  { id:"test-xiaowang", name:"Тест: 李明/王芳", key:"phrases_test_limingwangfang_v3", audioDir:null, data:[
-    {"id":0,"hz":"王芳怎么介绍自己？","py":"Wáng Fāng zěnme jièshào zìjǐ?","tr":"Как Ван Фан представилась?","mean":"我叫王芳。(Wǒ jiào Wáng Fāng.) — Меня зовут Ван Фан."},
-    {"id":1,"hz":"王芳姓什么？","py":"Wáng Fāng xìng shénme?","tr":"Какая фамилия у Ван Фан?","mean":"姓王。(xìng Wáng) — Фамилия Ван."},
-    {"id":2,"hz":"李明姓什么？","py":"Lǐ Míng xìng shénme?","tr":"Какая фамилия у Ли Мина?","mean":"姓李。(xìng Lǐ) — Фамилия Ли."}
+  { id:"test-xiaowang", name:"Вопросы: 李明/王芳", key:"phrases_test_limingwangfang_v4", audioDir:null, data:[
+    {"id":0,"hz":"王芳怎么介绍自己？","py":"Wáng Fāng zěnme jièshào zìjǐ?","mean":"Как Ван Фан представилась?"},
+    {"id":1,"hz":"我叫王芳。","py":"Wǒ jiào Wáng Fāng.","mean":"Меня зовут Ван Фан."},
+    {"id":2,"hz":"王芳姓什么？","py":"Wáng Fāng xìng shénme?","mean":"Какая фамилия у Ван Фан?"},
+    {"id":3,"hz":"姓王。","py":"Xìng Wáng.","mean":"Фамилия Ван."},
+    {"id":4,"hz":"李明姓什么？","py":"Lǐ Míng xìng shénme?","mean":"Какая фамилия у Ли Мина?"},
+    {"id":5,"hz":"姓李。","py":"Xìng Lǐ.","mean":"Фамилия Ли."}
   ]}
 ];
 // Редактируемая подборка «Слова» — хранится в localStorage, слова можно удалять
@@ -515,9 +516,6 @@ function renderCard(id){
   document.getElementById("fhz").textContent = d.hz;
   document.getElementById("bhz").textContent = d.hz;
   document.getElementById("bmean").textContent = d.mean;
-  const ftr = document.getElementById("ftr");
-  ftr.textContent = d.tr || "";
-  ftr.classList.toggle("hidden", !d.tr);
   // пиньинь: на лице или на обороте
   const fpy = document.getElementById("fpy"), bpy = document.getElementById("bpy");
   if(pyOnBack){ fpy.textContent = ""; fpy.classList.add("hidden"); bpy.textContent = d.py; bpy.classList.remove("hidden"); }
