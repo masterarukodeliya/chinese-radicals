@@ -64,7 +64,7 @@
   .card{position:relative;width:100%;max-width:380px;flex:1 1 auto;min-height:150px;background:var(--card);
     border:1px solid var(--line);border-radius:20px;cursor:pointer;overflow:hidden;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    padding:24px 22px;text-align:center}
+    padding:24px 22px;text-align:center;user-select:none}
   .hz{font-size:46px;line-height:1.3;margin-bottom:14px;font-family:var(--hanzi)}
   .py{font-size:21px;color:var(--accent);margin-bottom:10px}
   .mean{font-size:20px;margin-bottom:8px}
@@ -320,12 +320,15 @@ const DECKS = [
     {"id":11,"hz":"老样子","py":"Lǎo yàng zi","mean":"По-старому"},
     {"id":12,"hz":"正常","py":"Zhèngcháng","mean":"Нормально, норм"}
   ]},
-  { id:"dlg", name:"Диалог 对话", key:"phrases_dlg_v3", audioDir:null, data:[
-    {"id": 0, "hz": "你好，我是李明，很高兴认识你。", "py": "Nǐ hǎo, wǒ shì Lǐ Míng, hěn gāoxìng rènshi nǐ.", "mean": "李明: Привет, я Ли Мин, очень рад познакомиться."},
-    {"id": 1, "hz": "你好，我叫王芳，也很高兴认识你。", "py": "Nǐ hǎo, wǒ jiào Wáng Fāng, yě hěn gāoxìng rènshi nǐ.", "mean": "王芳: Привет, меня зовут Ван Фан, мне тоже приятно познакомиться."},
-    {"id": 2, "hz": "你姓什么？", "py": "Nǐ xìng shénme?", "mean": "李明: Какая у тебя фамилия?"},
-    {"id": 3, "hz": "我姓王，你呢？", "py": "Wǒ xìng Wáng, nǐ ne?", "mean": "王芳: Моя фамилия Ван, а ты?"},
-    {"id": 4, "hz": "我姓李。", "py": "Wǒ xìng Lǐ.", "mean": "李明: Моя фамилия Ли."}
+  { id:"dlg", name:"Диалог 对话", key:"phrases_dlg_v1", audioDir:"audio-dlg/", data:[
+    {"id": 0, "hz": "您好！我叫安娜。", "py": "nín hǎo! wǒ jiào Ānnà", "mean": "Турист А (Анна): Здравствуйте! Меня зовут Анна."},
+    {"id": 1, "hz": "您好，安娜！你好吗？", "py": "nín hǎo, Ānnà! nǐ hǎo ma?", "mean": "Гид: Здравствуйте, Анна! Как дела?"},
+    {"id": 2, "hz": "对不起，我来晚了。", "py": "duìbuqǐ, wǒ lái wǎn le", "mean": "Турист А: Извините, я опоздала."},
+    {"id": 3, "hz": "没关系，我很好，谢谢你。", "py": "méi guānxi, wǒ hěn hǎo, xièxie nǐ", "mean": "Гид: Ничего страшного, у меня всё хорошо, спасибо."},
+    {"id": 4, "hz": "谢谢你！我很高兴见到你。", "py": "xièxie nǐ! wǒ hěn gāoxìng jiàndào nǐ", "mean": "Турист А: Спасибо! Очень рада тебя видеть."},
+    {"id": 5, "hz": "你们好！我是马克。", "py": "nǐmen hǎo! wǒ shì Mǎkè", "mean": "Турист B (Марк): Здравствуйте! Я Марк."},
+    {"id": 6, "hz": "你们好，马克！你们好吗？", "py": "nǐmen hǎo, Mǎkè! nǐmen hǎo ma?", "mean": "Гид: Здравствуйте, Марк! Как вы?"},
+    {"id": 7, "hz": "我很好！我们准备好了。", "py": "wǒ hěn hǎo! wǒmen zhǔnbèi hǎo le", "mean": "Турист А: У меня всё хорошо! Мы готовы."}
   ]},
   { id:"zaor", name:"绕口令 · Финики", key:"phrases_zaor_v1", audioDir:null, data:[
     {"id":0,"hz":"出东门，过大桥","py":"Chū dōng mén, guò dà qiáo","mean":"Выйди через восточные ворота, перейди большой мост"},
@@ -397,84 +400,6 @@ const DECKS = [
     {"id":16,"hz":"我 要 学 汉语。","py":"wǒ yào xué Hànyǔ","mean":"Я собираюсь учить китайский."},
     {"id":17,"hz":"他 不 要 走。","py":"tā bù yào zǒu","mean":"Он не хочет уходить."},
     {"id":18,"hz":"你 要 什么？","py":"nǐ yào shénme?","mean":"Что тебе нужно?"}
-  ]},
-  { id:"test-xiaowang", name:"Вопросы: 李明/王芳", key:"phrases_test_limingwangfang_v4", audioDir:null, data:[
-    {"id":0,"hz":"王芳怎么介绍自己？","py":"Wáng Fāng zěnme jièshào zìjǐ?","mean":"Как Ван Фан представилась?"},
-    {"id":1,"hz":"我叫王芳。","py":"Wǒ jiào Wáng Fāng.","mean":"Меня зовут Ван Фан."},
-    {"id":2,"hz":"王芳姓什么？","py":"Wáng Fāng xìng shénme?","mean":"Какая фамилия у Ван Фан?"},
-    {"id":3,"hz":"姓王。","py":"Xìng Wáng.","mean":"Фамилия Ван."},
-    {"id":4,"hz":"李明姓什么？","py":"Lǐ Míng xìng shénme?","mean":"Какая фамилия у Ли Мина?"},
-    {"id":5,"hz":"姓李。","py":"Xìng Lǐ.","mean":"Фамилия Ли."}
-  ]},
-  { id:"verbs", name:"Глаголы 动词", key:"phrases_verbs_v4", audioDir:null, data:[
-    {"id":0,"hz":"能","py":"néng","mean":"мочь, можно"},
-    {"id":1,"hz":"我能去。","py":"wǒ néng qù","mean":"Я могу пойти."},
-    {"id":2,"hz":"你能来吗？","py":"nǐ néng lái ma?","mean":"Ты можешь прийти?"},
-    {"id":3,"hz":"想","py":"xiǎng","mean":"хотеть"},
-    {"id":4,"hz":"我想吃。","py":"wǒ xiǎng chī","mean":"Я хочу есть."},
-    {"id":5,"hz":"我想喝茶。","py":"wǒ xiǎng hē chá","mean":"Я хочу чаю."},
-    {"id":6,"hz":"知道","py":"zhīdào","mean":"знать"},
-    {"id":7,"hz":"我知道。","py":"wǒ zhīdào","mean":"Я знаю."},
-    {"id":8,"hz":"我不知道。","py":"wǒ bù zhīdào","mean":"Я не знаю."},
-    {"id":9,"hz":"懂","py":"dǒng","mean":"понимать"},
-    {"id":10,"hz":"我懂。","py":"wǒ dǒng","mean":"Я понимаю."},
-    {"id":11,"hz":"我不懂。","py":"wǒ bù dǒng","mean":"Я не понимаю."},
-    {"id":12,"hz":"喜欢","py":"xǐhuan","mean":"любить, нравиться"},
-    {"id":13,"hz":"我喜欢茶。","py":"wǒ xǐhuan chá","mean":"Я люблю чай."},
-    {"id":14,"hz":"我喜欢中国。","py":"wǒ xǐhuan Zhōngguó","mean":"Мне нравится Китай."},
-    {"id":15,"hz":"看","py":"kàn","mean":"смотреть, читать"},
-    {"id":16,"hz":"我看。","py":"wǒ kàn","mean":"Я смотрю."},
-    {"id":17,"hz":"我想看。","py":"wǒ xiǎng kàn","mean":"Хочу посмотреть."},
-    {"id":18,"hz":"去","py":"qù","mean":"идти, ехать"},
-    {"id":19,"hz":"我去。","py":"wǒ qù","mean":"Я иду."},
-    {"id":20,"hz":"我想去中国。","py":"wǒ xiǎng qù Zhōngguó","mean":"Хочу поехать в Китай."},
-    {"id":21,"hz":"吃","py":"chī","mean":"есть, кушать"},
-    {"id":22,"hz":"我吃。","py":"wǒ chī","mean":"Я ем."},
-    {"id":23,"hz":"我不吃辣。","py":"wǒ bù chī là","mean":"Я не ем острое."},
-    {"id":24,"hz":"喝","py":"hē","mean":"пить"},
-    {"id":25,"hz":"我喝茶。","py":"wǒ hē chá","mean":"Я пью чай."},
-    {"id":26,"hz":"我想喝水。","py":"wǒ xiǎng hē shuǐ","mean":"Хочу воды."},
-    {"id":27,"hz":"买","py":"mǎi","mean":"покупать"},
-    {"id":28,"hz":"我买。","py":"wǒ mǎi","mean":"Я беру / покупаю."},
-    {"id":29,"hz":"我想买这个。","py":"wǒ xiǎng mǎi zhège","mean":"Хочу купить это."},
-    {"id":30,"hz":"坐","py":"zuò","mean":"сидеть; ехать (на транспорте)"},
-    {"id":31,"hz":"请坐。","py":"qǐng zuò","mean":"Садитесь."},
-    {"id":32,"hz":"我坐地铁。","py":"wǒ zuò dìtiě","mean":"Я еду на метро."},
-    {"id":33,"hz":"是","py":"shì","mean":"быть; да"},
-    {"id":34,"hz":"我是老师。","py":"wǒ shì lǎoshī","mean":"Я учитель."},
-    {"id":35,"hz":"这是茶。","py":"zhè shì chá","mean":"Это чай."},
-    {"id":36,"hz":"有","py":"yǒu","mean":"иметь, быть в наличии"},
-    {"id":37,"hz":"我有。","py":"wǒ yǒu","mean":"У меня есть."},
-    {"id":38,"hz":"有水吗？","py":"yǒu shuǐ ma?","mean":"Есть вода?"},
-    {"id":39,"hz":"叫","py":"jiào","mean":"зваться, звать"},
-    {"id":40,"hz":"我叫…","py":"wǒ jiào…","mean":"Меня зовут…"},
-    {"id":41,"hz":"你叫什么？","py":"nǐ jiào shénme?","mean":"Как тебя зовут?"},
-    {"id":42,"hz":"说","py":"shuō","mean":"говорить, сказать"},
-    {"id":43,"hz":"我说汉语。","py":"wǒ shuō Hànyǔ","mean":"Я говорю по-китайски."},
-    {"id":44,"hz":"请说。","py":"qǐng shuō","mean":"Говорите."},
-    {"id":45,"hz":"来","py":"lái","mean":"приходить"},
-    {"id":46,"hz":"我来了。","py":"wǒ lái le","mean":"Я пришёл."},
-    {"id":47,"hz":"你来吗？","py":"nǐ lái ma?","mean":"Ты придёшь?"},
-    {"id":48,"hz":"住","py":"zhù","mean":"жить, проживать"},
-    {"id":49,"hz":"我住这里。","py":"wǒ zhù zhèlǐ","mean":"Я живу здесь."},
-    {"id":50,"hz":"你住哪儿？","py":"nǐ zhù nǎr?","mean":"Где ты живёшь?"}
-  ]},
-  { id:"travel", name:"Турминимум ✈️", key:"phrases_travel_v1", audioDir:null, data:[
-    {"id":0,"hz":"对不起","py":"duìbuqǐ","mean":"извините"},
-    {"id":1,"hz":"再见","py":"zàijiàn","mean":"до свидания"},
-    {"id":2,"hz":"多少钱？","py":"duōshao qián?","mean":"сколько стоит?"},
-    {"id":3,"hz":"太贵了","py":"tài guì le","mean":"слишком дорого"},
-    {"id":4,"hz":"我要这个","py":"wǒ yào zhège","mean":"я хочу это"},
-    {"id":5,"hz":"这是什么？","py":"zhè shì shénme?","mean":"что это?"},
-    {"id":6,"hz":"洗手间在哪儿？","py":"xǐshǒujiān zài nǎr?","mean":"где туалет?"},
-    {"id":7,"hz":"我不吃辣","py":"wǒ bù chī là","mean":"я не ем острое"},
-    {"id":8,"hz":"买单","py":"mǎidān","mean":"счёт (в ресторане)"},
-    {"id":9,"hz":"我听不懂","py":"wǒ tīng bu dǒng","mean":"я не понимаю (на слух)"},
-    {"id":10,"hz":"请帮帮我","py":"qǐng bāngbang wǒ","mean":"помогите, пожалуйста"},
-    {"id":11,"hz":"有WiFi吗？","py":"yǒu WiFi ma?","mean":"есть вайфай?"},
-    {"id":12,"hz":"可以拍照吗？","py":"kěyǐ pāizhào ma?","mean":"можно фотографировать?"},
-    {"id":13,"hz":"我想去这里","py":"wǒ xiǎng qù zhèlǐ","mean":"хочу сюда (показать адрес)"},
-    {"id":14,"hz":"不要","py":"bú yào","mean":"не надо"}
   ]}
 ];
 // Редактируемая подборка «Слова» — хранится в localStorage, слова можно удалять
@@ -877,8 +802,14 @@ function renderDecks(){
   updateDlgFull();
   updateDecksToggle();
 }
+// кнопка «весь диалог» — только в подборке «Диалог»
 const dlgFullBtn = document.getElementById("dlgFull");
-function updateDlgFull(){ dlgFullBtn.classList.add("hidden"); }
+let dlgAudio = null;
+function updateDlgFull(){ dlgFullBtn.classList.toggle("hidden", deckId !== "dlg"); }
+dlgFullBtn.onclick = () => {
+  if(!dlgAudio) dlgAudio = new Audio("audio-dlg-full.mp3?v=" + AUDIO_VER);
+  dlgAudio.currentTime = 0; dlgAudio.play();
+};
 function switchDeck(id){
   if(id === deckId){ decksBar.classList.remove("open"); decksToggle.classList.remove("on"); return; }
   deckId = id; localStorage.setItem("phrases_deck", id);
